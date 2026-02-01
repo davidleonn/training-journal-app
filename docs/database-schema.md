@@ -4,11 +4,11 @@
 
 ### 1. Users
 
-| Column       | Type          | Description          |
-| :----------- | :------------ | :------------------- |
-| `id`         | `UUID`        | Primary Key (PK)     |
-| `email`      | `VARCHAR(50)` | Unique login email   |
-| `created_at` | `TIMESTAMP`   | Record creation date |
+| Column       | Type           | Description          |
+| :----------- | :------------- | :------------------- |
+| `id`         | `UUID`         | Primary Key (PK)     |
+| `email`      | `VARCHAR(255)` | Unique login email   |
+| `created_at` | `TIMESTAMP`    | Record creation date |
 
 ### 2. Workouts (Strength)
 
