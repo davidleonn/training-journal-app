@@ -1,0 +1,37 @@
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- IDEs/Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Backend (.NET) ---
+**/bin/
+**/obj/
+*.user
+*.lock.json
+.template.config/
+# Entity Framework migrations (Keep these, but ignore the design-time cache)
+*.db
+*.db-journal
+
+# --- Frontend (Node/React) ---
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- QA/DevOps ---
+screenshots/
+videos/
+test-results/
