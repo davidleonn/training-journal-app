@@ -1,198 +1,186 @@
 {
-  "info": {
-    "_postman_id": "9c74cc86-106c-423e-babe-b65f1f4c6c37",
-    "name": "Training Journal",
+	"info": {
+		"_postman_id": "9c74cc86-106c-423e-babe-b65f1f4c6c37",
+		"name": "Training Journal",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "Users",
-      "item": [
-        {
-          "name": "1. Get all users",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "f408b046-c9f7-45f1-9a1a-5b0d9341186a",
-                "exec": [
-                  "validateStatusCode(pm, 200)"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "7427d7ae-03ec-4c94-ac8a-5f1891862dcf",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users",
-              "host": [
-                "{{url}}"
-              ],
-              "path": [
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "2. Create user",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "47bc11df-513f-4217-ac0c-18bd2fb30dc5",
-                "exec": [
-                  "validateStatusCode(pm, 201)",
-                  "",
-                  "const response = pm.response.json();",
-                  "const userId = response.id;",
-                  "",
-                  "pm.globals.set(\"userId\", userId);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "c121b765-381f-4698-bdaf-062dfb01fd67",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"davidleon_06@hotmail.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{url}}/users",
-              "host": [
-                "{{url}}"
-              ],
-              "path": [
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "3. Get user by id",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "21d5231f-208f-40af-ac73-c40246fabeb1",
-                "exec": [
-                  "validateStatusCode(pm, 200)"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "5552be8a-a5eb-4190-bded-a8164af6d93c",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users/{{userId}}",
-              "host": [
-                "{{url}}"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "4. Delete user by id",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "42ddbb25-2923-47bb-bac2-f18a0a8896ce",
-                "exec": [
-                  "validateStatusCode(pm, 204)"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "id": "35faabc4-4b91-444a-8090-fbc818fd365b",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{url}}/users/{{userId}}",
-              "host": [
-                "{{url}}"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ]
-            }
-          },
-          "response": []
-        }
-      ],
-      "id": "8d1beba2-22c9-4549-8017-9bfd76d78419"
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "id": "1deeb4c2-414b-4e7e-a1e5-305e12af029b",
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          "// Status code ",
-          "",
-          "validateStatusCode = function (pm, code) {",
-          "    pm.test(`Status code is ${code}`, () => {",
-          "        pm.response.to.have.status(code);",
-          "    });",
-          "}"
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "id": "680d247e-5052-4bf6-9b70-ff6c3cd0548f",
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "id": "b561bb91-53d2-4715-8fe7-4dc9334a0b43",
-      "key": "url",
-      "value": ""
-    }
-  ]
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "1. Get all users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 200)"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 201)",
+									"",
+									"const response = pm.response.json();",
+									"const userId = response.id;",
+									"",
+									"pm.globals.set(\"userId\", userId);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"davidleon_06@hotmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get user by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 200)"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/{{userId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Delete user by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 204)"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/{{userId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// Status code ",
+					"",
+					"validateStatusCode = function (pm, code) {",
+					"    pm.test(`Status code is ${code}`, () => {",
+					"        pm.response.to.have.status(code);",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": ""
+		}
+	]
 }

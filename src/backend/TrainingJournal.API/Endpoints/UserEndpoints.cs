@@ -1,6 +1,7 @@
 using TrainingJournal.API.Models;
 using TrainingJournal.API.Repositories.Interfaces;
-using TrainingJournal.API.Contracts; // <--- Import the Contracts
+using TrainingJournal.API.Contracts;
+using System.Text.RegularExpressions;
 
 namespace TrainingJournal.API.Endpoints;
 
@@ -23,32 +24,43 @@ public static class UserEndpoints
         // GET /users/{id}
         group.MapGet("/{id}", async (Guid id, IUserRepository repo) =>
         {
-            var user = await repo.GetByIdAsync(id);
-            if (user is null) return Results.NotFound();
-
+            var user = await repo.GetByIdAsync(id) ?? throw new KeyNotFoundException($"User with id {id} was not found.");
             // Convert Domain -> DTO
             return Results.Ok(new UserResponse(user.Id, user.Email, user.CreatedAt));
         });
 
         // POST /users
-        // NOW: We accept CreateUserRequest, not User
         group.MapPost("/", async (CreateUserRequest request, IUserRepository repo) =>
         {
-            // 1. Map DTO -> Domain
-            // We create the domain object here. Ideally, use a factory or mapper later.
+            // 1. Validation: Check if empty
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                throw new ArgumentException("Email cannot be empty.");
+            }
+
+            // 2. Validation: Check format (Basic Email Regex)
+            // This pattern checks: non-spaces @ non-spaces . non-spaces
+            string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            if (!Regex.IsMatch(request.Email, emailPattern))
+            {
+                throw new ArgumentException($"'{request.Email}' is not a valid email address.");
+            }
+
+            // 3. Map DTO -> Domain
             var newUser = new User
             {
-                Email = request.Email
-                // Id and CreatedAt are handled by DB or defaults
+                Email = request.Email,
+                // Fix: Set the date here so the response matches the database
+                CreatedAt = DateTime.UtcNow
             };
 
-            // 2. Call Repo
+            // 4. Call Repo (Save to DB)
             var id = await repo.CreateAsync(newUser);
 
-            // 3. Return a clean Response DTO
-            // Note: In a real app, you might fetch the created user to get the real CreatedAt date
-            var response = new UserResponse(id, newUser.Email, DateTime.UtcNow);
+            // 5. Create Response DTO
+            var response = new UserResponse(id, newUser.Email, newUser.CreatedAt);
 
+            // 6. Return 201 Created with Location header
             return Results.Created($"/users/{id}", response);
         });
 
@@ -56,7 +68,14 @@ public static class UserEndpoints
         group.MapDelete("/{id}", async (Guid id, IUserRepository repo) =>
         {
             var deleted = await repo.DeleteAsync(id);
-            return deleted ? Results.NoContent() : Results.NotFound();
+
+            // If you want Delete to also throw 404 when missing, you can do:
+            if (!deleted)
+            {
+                throw new KeyNotFoundException($"User with id {id} was not found.");
+            }
+
+            return Results.NoContent();
         });
     }
 }

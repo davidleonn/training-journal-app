@@ -1,6 +1,7 @@
 using TrainingJournal.API.Repositories.Interfaces;
 using TrainingJournal.API.Repositories;
 using TrainingJournal.API.Endpoints;
+using TrainingJournal.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(); // Adds standard fields to the JSON
 
 var app = builder.Build();
+app.UseExceptionHandler();
 
 // 2. Configure Pipeline
 if (app.Environment.IsDevelopment())

@@ -18,14 +18,14 @@ public abstract class BaseRepository<T>
     protected NpgsqlConnection CreateConnection() => new NpgsqlConnection(_connectionString);
 
     // GENERIC READ: Works for User, Workout, Exercise...
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
         using var connection = CreateConnection();
         return await connection.QueryAsync<T>($"SELECT * FROM {_tableName}");
     }
 
     // GENERIC READ BY ID
-    public async Task<T?> GetByIdAsync(Guid id)
+    public virtual async Task<T?> GetByIdAsync(Guid id)
     {
         using var connection = CreateConnection();
         return await connection.QueryFirstOrDefaultAsync<T>(
@@ -33,7 +33,7 @@ public abstract class BaseRepository<T>
     }
 
     // GENERIC DELETE (Optional, if you want it)
-    public async Task<bool> DeleteAsync(Guid id)
+    public virtual async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = CreateConnection();
         var count = await connection.ExecuteAsync(
