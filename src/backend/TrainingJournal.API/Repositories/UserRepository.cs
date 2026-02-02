@@ -32,10 +32,15 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
     }
 
-    public async Task<bool> UpdateAsync(User user)
+    public async Task<User?> GetByEmailAsync(string email)
     {
+        // Use your helper method to open a connection
         using var connection = CreateConnection();
-        var sql = "UPDATE users SET email = @Email WHERE id = @Id";
-        return await connection.ExecuteAsync(sql, user) > 0;
+
+        // Use explicit column mapping (AS CreatedAt) to match your User model
+        string sql = "SELECT id, email, created_at AS CreatedAt FROM users WHERE email = @Email";
+
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
     }
+
 }

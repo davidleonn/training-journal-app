@@ -1,0 +1,84 @@
+name: Backend Quality Gate (CI)
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "src/backend/**" # API & Unit Test changes
+      - "src/database/**" # SQL Scripts
+      - "qa/**" # Postman Tests
+      - "docker-compose.yml"
+      - ".github/workflows/**"
+
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  # ------------------------------------------------------------------
+  # JOB 1: Unit Tests & Coverage (The "Fast" Guard)
+  # ------------------------------------------------------------------
+  unit-tests:
+    name: Unit Tests & Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0"
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Run Tests & Enforce Coverage
+        # This command does two things:
+        # 1. Runs the tests
+        # 2. Fails the build if Line Coverage is below 80% (/p:Threshold=80)
+        run: |
+          dotnet test \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=lcov \
+          /p:Threshold=80 \
+          /p:ThresholdType=line
+
+  # ------------------------------------------------------------------
+  # JOB 2: Integration Tests (The "Real World" Check)
+  # Only runs if Job 1 passes!
+  # ------------------------------------------------------------------
+  integration-tests:
+    name: API Integration Tests (Docker)
+    needs: unit-tests # <--- Critical: Wait for Unit Tests to pass first
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Start Environment (Docker)
+        run: |
+          docker compose up -d --build
+          echo "Waiting for database to initialize..."
+          sleep 15
+
+      - name: Run Postman Tests
+        run: |
+          newman run "qa/postman/collections/Training Journal.postman_collection.json" \
+            --env-var "url=http://localhost:5001" \
+            --reporters cli
+
+      - name: Dump Docker Logs (If Failed)
+        if: failure()
+        run: docker compose logs

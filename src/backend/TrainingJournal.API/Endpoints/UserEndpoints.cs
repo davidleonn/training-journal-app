@@ -1,7 +1,7 @@
 using TrainingJournal.API.Models;
 using TrainingJournal.API.Repositories.Interfaces;
 using TrainingJournal.API.Contracts;
-using System.Text.RegularExpressions;
+using TrainingJournal.API.Services;
 
 namespace TrainingJournal.API.Endpoints;
 
@@ -30,37 +30,22 @@ public static class UserEndpoints
         });
 
         // POST /users
-        group.MapPost("/", async (CreateUserRequest request, IUserRepository repo) =>
+        group.MapPost("/", async (CreateUserRequest request, UserService service) =>
         {
-            // 1. Validation: Check if empty
-            if (string.IsNullOrWhiteSpace(request.Email))
-            {
-                throw new ArgumentException("Email cannot be empty.");
-            }
-
-            // 2. Validation: Check format (Basic Email Regex)
-            // This pattern checks: non-spaces @ non-spaces . non-spaces
-            string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-            if (!Regex.IsMatch(request.Email, emailPattern))
-            {
-                throw new ArgumentException($"'{request.Email}' is not a valid email address.");
-            }
-
-            // 3. Map DTO -> Domain
+            // 1. Map DTO -> Domain
             var newUser = new User
             {
                 Email = request.Email,
-                // Fix: Set the date here so the response matches the database
                 CreatedAt = DateTime.UtcNow
             };
 
-            // 4. Call Repo (Save to DB)
-            var id = await repo.CreateAsync(newUser);
+            // 2. Call Service
+            // If validation fails -> Service throws ArgumentException -> GlobalHandler returns 400
+            // If duplicate -> Service throws InvalidOperationException -> GlobalHandler returns 409
+            var id = await service.RegisterUserAsync(newUser);
 
-            // 5. Create Response DTO
+            // 3. Success Response
             var response = new UserResponse(id, newUser.Email, newUser.CreatedAt);
-
-            // 6. Return 201 Created with Location header
             return Results.Created($"/users/{id}", response);
         });
 
