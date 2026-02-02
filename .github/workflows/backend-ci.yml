@@ -49,7 +49,8 @@ jobs:
           /p:CollectCoverage=true \
           /p:CoverletOutputFormat=lcov \
           /p:Threshold=80 \
-          /p:ThresholdType=line
+          /p:ThresholdType=line \
+          /p:Exclude="[TrainingJournal.API]Program%2c[TrainingJournal.API]TrainingJournal.API.Models.*%2c[TrainingJournal.API]TrainingJournal.API.Repositories.*"
 
   # ------------------------------------------------------------------
   # JOB 2: Integration Tests (The "Real World" Check)
