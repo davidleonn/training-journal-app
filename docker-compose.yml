@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./src/database/scripts/001_initial_schema.sql:/docker-entrypoint-initdb.d/init.sql
 
   # Ensure you have your API service here too!
   api:
