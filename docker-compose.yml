@@ -10,6 +10,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./src/database/scripts/001_initial_schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Ensure you have your API service here too!
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/TrainingJournal.API/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=training_journal;Username=admin;Password=devpassword
+    ports:
+      - "5001:8080"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:

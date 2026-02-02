@@ -1,0 +1,34 @@
+name: API Integration Tests (Docker)
+
+on:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Start Environment
+        run: |
+          docker compose up -d --build
+          echo "Waiting for database to initialize..."
+          sleep 15 # Critical: Give Postgres time to run init.sql
+
+      - name: Run Postman Tests
+        run: |
+          # Note: We use localhost:5000 because GitHub exposes the container ports to the runner
+          newman run "qa/postman/collections/Training Journal.postman_collection.json" \
+            --env-var "url=http://localhost:5001" \
+            --reporters cli
+
+      - name: Dump Docker Logs (If Failed)
+        if: failure()
+        run: docker compose logs
