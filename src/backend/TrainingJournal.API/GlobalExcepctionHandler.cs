@@ -30,6 +30,10 @@ public class GlobalExceptionHandler : IExceptionHandler
             PostgresException pgEx when pgEx.SqlState == "23505"
                 => (StatusCodes.Status409Conflict, "Conflict", "A user with this email already exists."),
 
+            // Add this case inside your switch statement:
+            InvalidOperationException
+                => (StatusCodes.Status409Conflict, "Conflict", exception.Message),
+
             //  Handle Invalid ID Format (e.g. "abc" instead of GUID)
             BadHttpRequestException
         => (StatusCodes.Status400BadRequest, "Bad Request", "The request input was invalid."),
