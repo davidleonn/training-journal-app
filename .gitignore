@@ -35,3 +35,4 @@ yarn-error.log*
 screenshots/
 videos/
 test-results/
+.postman
