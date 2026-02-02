@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+@theme {
+  /* This is where you will put custom colors later */
+}
+
+:root {
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* Instead of @apply here, you can use standard CSS 
+     or just keep the @apply if you've done Step 1 above */
+  @apply bg-gray-50 text-gray-900;
+}
