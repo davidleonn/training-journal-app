@@ -26,6 +26,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       <div className="space-y-4">
         <Input
           name="email"
+          data-testid="login-email-input"
           label="Email Address"
           type="email"
           placeholder="Enter your email"
@@ -47,7 +48,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         />
       </div>
 
-      <Button type="submit" variant="primary" disabled={isPending} className="h-16 w-full text-xl shadow-xl shadow-orange-500/20">
+      <Button
+        type="submit"
+        data-testid="login-submit-button"
+        variant="primary"
+        disabled={isPending}
+        className="h-16 w-full text-xl shadow-xl shadow-orange-500/20"
+      >
         {isPending ? 'Verifying...' : 'Enter Journal'}
       </Button>
     </form>
