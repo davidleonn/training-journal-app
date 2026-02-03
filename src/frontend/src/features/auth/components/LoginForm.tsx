@@ -4,22 +4,24 @@ import { useLogin } from '../hooks/useLogin';
 import { ApiError, LoginFormProps } from '../types';
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  // 1. Explicitly track the email in state
   const [email, setEmail] = useState('');
 
   const { mutate: login, isPending, error } = useLogin(onLoginSuccess);
 
   const apiError = (error as ApiError | null)?.response?.data?.detail || (error ? 'Authentication failed' : undefined);
 
-  const handleAction = async () => {
-    // 2. We use the state value directly
+  // FIX: Switched to 'React.SyntheticEvent' to fix the React 19 deprecation error
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    // FIX: preventDefault stops the page refresh/blinking
+    e.preventDefault();
+
     if (email) {
-      login({ email });
+      login({ email } as any);
     }
   };
 
   return (
-    <form action={handleAction} className="w-full space-y-6">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
       <div className="space-y-4">
         <Input
           name="email"
@@ -29,12 +31,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
           placeholder="Enter your email"
           autoComplete="username"
           required
-          // 3. Bind the value and the change handler
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isPending}
           error={apiError}
         />
+
         <Input
           name="password"
           label="Access Key (Optional)"

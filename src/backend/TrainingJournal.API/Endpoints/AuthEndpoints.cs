@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Mvc;
 using TrainingJournal.API.Contracts;
 using TrainingJournal.API.Services.Interfaces;
+using TrainingJournal.API.Core.Interfaces; 
 
 namespace TrainingJournal.API.Endpoints;
 
@@ -7,25 +9,26 @@ public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-
         var group = app.MapGroup("auth").WithTags("Auth");
 
-        group.MapPost("/login", async (LoginRequest request, IAuthService authService) =>
+        // We point to the static method instead of writing code here
+        group.MapPost("/login", LoginHandler);
+    }
+
+    public static async Task<IResult> LoginHandler(
+        [FromBody] LoginRequest request, 
+        IAuthService authService, 
+        ITokenService tokenService)
+    {
+        var user = await authService.VerifyUserExistsAsync(request.Email);
+
+        if (user is null)
         {
-            // 1. Call Service directly
-            // If email is empty -> Service throws ArgumentException -> GlobalHandler returns 400
-            // If DB is down -> Repository throws NpgsqlException -> GlobalHandler returns 503
-            var user = await authService.VerifyUserExistsAsync(request.Email);
+            return Results.Problem(detail: "User not found", statusCode: 401);
+        }
 
-            // 2. Handle Logic Result (Not an Exception)
-            if (user is null)
-            {
-                // We typically don't throw an exception for "Login Failed" 
-                // because it's a valid business outcome, not a system error.
-                return Results.Unauthorized();
-            }
+        var authResult = tokenService.CreateToken(user.Email, user.Id.ToString());
 
-            return Results.Ok(user);
-        });
+        return Results.Ok(new LoginResponse(authResult.Token, authResult.Expires));
     }
 }
