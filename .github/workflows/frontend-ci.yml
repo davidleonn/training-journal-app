@@ -3,18 +3,15 @@ name: Frontend CI
 on:
   push:
     branches: ["master"]
-    paths: ["src/frontend/**"]
+    paths: ["src/frontend/**", "qa/Playwright/**"]
   pull_request:
     branches: ["master"]
-    paths: ["src/frontend/**"]
+    paths: ["src/frontend/**", "qa/Playwright/**"]
 
 jobs:
-  lint-and-style:
-    name: Lint & Style
+  quality-assurance:
+    name: Lint, Type Check & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src/frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -23,13 +20,45 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: "./src/frontend/package-lock.json"
+          # FIX: Cache BOTH frontend and QA dependencies
+          cache-dependency-path: |
+            src/frontend/package-lock.json
+            qa/Playwright/package-lock.json
 
-      - name: Install Dependencies
+      # --- FRONTEND SECTION ---
+
+      - name: Install Frontend Dependencies
+        working-directory: ./src/frontend
         run: npm ci
 
       - name: Check Formatting
+        working-directory: ./src/frontend
         run: npx prettier --check 'src/**/*.{ts,tsx,css,md}'
 
       - name: Run Linter
+        working-directory: ./src/frontend
         run: npm run lint
+
+      - name: Type Check
+        working-directory: ./src/frontend
+        run: npx tsc --noEmit
+
+      - name: Run Unit Tests
+        working-directory: ./src/frontend
+        run: npx vitest run
+
+      # --- PLAYWRIGHT SECTION ---
+
+      - name: Install QA Dependencies
+        working-directory: ./qa/Playwright
+        # IMPORTANT: This requires a package-lock.json in qa/Playwright to exist!
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: ./qa/Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        working-directory: ./qa/Playwright
+        # No -c needed because we are running inside the folder
+        run: npx playwright test --reporter=list
