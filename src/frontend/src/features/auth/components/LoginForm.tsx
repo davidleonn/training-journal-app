@@ -16,7 +16,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
 
     if (email) {
-      login({ email } as any);
+      login({ email });
     }
   };
 
