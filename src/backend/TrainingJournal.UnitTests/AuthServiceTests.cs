@@ -57,4 +57,19 @@ public class AuthServiceTests
         // Assert
         result.Should().BeNull();
     }
+
+    [Fact]
+public async Task VerifyUserExistsAsync_ShouldThrowArgumentException_WhenEmailIsEmpty()
+{
+    // Arrange
+    var email = ""; 
+
+    // Act
+    // We use a specific FluentAssertions method to check for exceptions
+    var action = async () => await _sut.VerifyUserExistsAsync(email);
+
+    // Assert
+    await action.Should().ThrowAsync<ArgumentException>()
+        .WithMessage("Email cannot be empty.");
+}
 }

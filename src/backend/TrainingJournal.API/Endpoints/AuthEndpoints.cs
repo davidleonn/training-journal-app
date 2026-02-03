@@ -12,14 +12,20 @@ public static class AuthEndpoints
 
         group.MapPost("/login", async (LoginRequest request, IAuthService authService) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                return Results.BadRequest("Email required.");
-
+            // 1. Call Service directly
+            // If email is empty -> Service throws ArgumentException -> GlobalHandler returns 400
+            // If DB is down -> Repository throws NpgsqlException -> GlobalHandler returns 503
             var user = await authService.VerifyUserExistsAsync(request.Email);
 
-            return user is null 
-                ? Results.Unauthorized() 
-                : Results.Ok(user);
+            // 2. Handle Logic Result (Not an Exception)
+            if (user is null)
+            {
+                // We typically don't throw an exception for "Login Failed" 
+                // because it's a valid business outcome, not a system error.
+                return Results.Unauthorized();
+            }
+
+            return Results.Ok(user);
         });
     }
 }
