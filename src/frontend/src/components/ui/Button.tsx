@@ -1,9 +1,5 @@
 import { cn } from '@/utils';
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'outline';
-  testId?: string;
-}
+import { ButtonProps } from './types';
 
 export const Button: React.FC<ButtonProps> = ({ className, variant = 'primary', testId, ...props }) => {
   const baseStyles = 'rounded-lg font-semibold transition-all active:scale-95 flex items-center justify-center';

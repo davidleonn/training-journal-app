@@ -32,6 +32,11 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Let's add a test user so we have someone to "Log in" as
+INSERT INTO users (email) 
+VALUES ('davidleon_06@hotmail.com')
+ON CONFLICT (email) DO NOTHING;
+
 -- 2. WORKOUTS TABLE (Strength Container)
 -- Represents a single gym session (e.g., "Monday Chest Day").
 CREATE TABLE workouts (

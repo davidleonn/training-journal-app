@@ -1,14 +1,21 @@
+import { useState } from 'react';
 import { Button, Input } from '@/components';
-
-interface LoginFormProps {
-  onLoginSuccess: () => void;
-}
+import { useLogin } from '../hooks/useLogin';
+import { ApiError, LoginFormProps } from '../types';
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  const handleAction = async (formData: FormData) => {
-    const email = formData.get('email');
-    console.log('Authenticating:', email);
-    onLoginSuccess();
+  // 1. Explicitly track the email in state
+  const [email, setEmail] = useState('');
+
+  const { mutate: login, isPending, error } = useLogin(onLoginSuccess);
+
+  const apiError = (error as ApiError | null)?.response?.data?.detail || (error ? 'Authentication failed' : undefined);
+
+  const handleAction = async () => {
+    // 2. We use the state value directly
+    if (email) {
+      login({ email });
+    }
   };
 
   return (
@@ -16,25 +23,36 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       <div className="space-y-4">
         <Input
           name="email"
+          data-testid="login-email-input"
           label="Email Address"
-          testId="login-email-input"
           type="email"
           placeholder="Enter your email"
-          autoComplete="username" // Chrome prefers 'username' for the ID field
+          autoComplete="username"
           required
+          // 3. Bind the value and the change handler
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isPending}
+          error={apiError}
         />
         <Input
           name="password"
           label="Access Key (Optional)"
-          testId="login-password-input"
           type="password"
           placeholder="••••••••"
-          autoComplete="current-password" // Critical for clearing the DevTools warning
+          autoComplete="current-password"
+          disabled={isPending}
         />
       </div>
 
-      <Button type="submit" variant="primary" data-testid="login-submit-button" className="h-16 w-full text-xl shadow-xl shadow-orange-500/20">
-        Enter Journal
+      <Button
+        type="submit"
+        data-testid="login-submit-button"
+        variant="primary"
+        disabled={isPending}
+        className="h-16 w-full text-xl shadow-xl shadow-orange-500/20"
+      >
+        {isPending ? 'Verifying...' : 'Enter Journal'}
       </Button>
     </form>
   );

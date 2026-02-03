@@ -1,8 +1,6 @@
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  testId?: string;
-}
-export const Input: React.FC<InputProps> = ({ label, id, name, testId, ...props }) => {
+import { InputProps } from './types';
+
+export const Input: React.FC<InputProps> = ({ label, id, name, testId, error, ...props }) => {
   const inputId = id || name;
 
   return (
@@ -14,9 +12,15 @@ export const Input: React.FC<InputProps> = ({ label, id, name, testId, ...props 
         id={inputId}
         name={name}
         data-testid={testId}
-        {...props} // autoComplete will be passed here automatically if provided
-        className="h-14 w-full rounded-2xl border-2 border-slate-100 bg-white px-4 text-base transition-all placeholder:text-slate-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 focus:outline-none disabled:opacity-50"
+        {...props}
+        className={`h-14 w-full rounded-2xl border-2 px-4 text-base transition-all placeholder:text-slate-300 focus:outline-none disabled:opacity-50 ${
+          error
+            ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+            : 'border-slate-100 bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100'
+        }`}
       />
+      {/* Show the error message below the input */}
+      {error && <p className="ml-1 text-xs font-semibold text-red-500">{error}</p>}
     </div>
   );
 };
