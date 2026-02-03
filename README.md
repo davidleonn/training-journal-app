@@ -257,7 +257,7 @@ npx playwright test --ui
 
 # Run specifically on Chromium / Firefox / WebKit
 npx playwright test --project=chromium
-
+````
 
 ### Available Scripts
 
@@ -270,4 +270,3 @@ From the `src/frontend` directory, you can run:
 | `npm run lint`     | Runs the ESLint check.                         |
 | `npm run lint:fix` | Automatically fixes repairable linting issues. |
 | `npm run format`   | Formats the entire codebase using Prettier.    |
-````
