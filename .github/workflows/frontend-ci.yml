@@ -9,8 +9,8 @@ on:
     paths: ["src/frontend/**"]
 
 jobs:
-  lint-and-style:
-    name: Lint & Style
+  quality-assurance:
+    name: Lint, Type Check & Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,3 +33,12 @@ jobs:
 
       - name: Run Linter
         run: npm run lint
+
+      # Step 1: Check for TypeScript errors
+      # This ensures your 'as any' and aliases are behaving
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      # Step 2: Run Vitest in CI mode
+      - name: Run Unit Tests
+        run: npx vitest run

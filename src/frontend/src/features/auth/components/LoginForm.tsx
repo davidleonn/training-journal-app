@@ -5,8 +5,6 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  // React 19 Action function
-  // formData automatically collects all values from inputs with a 'name' prop
   const handleAction = async (formData: FormData) => {
     const email = formData.get('email');
     // const password = formData.get('password');
