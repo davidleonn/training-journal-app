@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LoginForm } from '@/features';
+import { LoginForm } from '@/features'; // Pointing to the local component
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
