@@ -3,18 +3,15 @@ name: Frontend CI
 on:
   push:
     branches: ["master"]
-    paths: ["src/frontend/**"]
+    paths: ["src/frontend/**", "qa/**", "playwright.config.ts"] # Added QA paths
   pull_request:
     branches: ["master"]
-    paths: ["src/frontend/**"]
+    paths: ["src/frontend/**", "qa/**", "playwright.config.ts"]
 
 jobs:
   quality-assurance:
     name: Lint, Type Check & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src/frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -26,19 +23,35 @@ jobs:
           cache-dependency-path: "./src/frontend/package-lock.json"
 
       - name: Install Dependencies
+        working-directory: ./src/frontend
         run: npm ci
 
       - name: Check Formatting
+        working-directory: ./src/frontend
         run: npx prettier --check 'src/**/*.{ts,tsx,css,md}'
 
       - name: Run Linter
+        working-directory: ./src/frontend
         run: npm run lint
 
-      # Step 1: Check for TypeScript errors
-      # This ensures your 'as any' and aliases are behaving
       - name: Type Check
+        working-directory: ./src/frontend
         run: npx tsc --noEmit
 
-      # Step 2: Run Vitest in CI mode
       - name: Run Unit Tests
+        working-directory: ./src/frontend
         run: npx vitest run
+
+      # --- PLAYWRIGHT SECTION ---
+
+      - name: Install Playwright Browsers
+        # Run from root because playwright is usually at the root
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        # Playwright will use the 'webServer' config to start your frontend
+        run: npx playwright test
+
+      - name: Run Playwright E2E Tests
+        # 'list' reporter prints each test's pass/fail status directly in the logs
+        run: npx playwright test --reporter=list
