@@ -40,13 +40,15 @@ The **Training Journal** is a personal data platform designed to capture the nua
 We utilize a mono-repo strategy to ensure atomic changes and simplified dependency management between the API and UI.
 
 ```text
-├── .github/workflows   # CI Pipelines (Postman Integration Tests)
+├── .github/workflows   # CI Pipelines (Frontend & Backend)
 ├── docs/               # Architecture Decision Records (ADRs) & ERDs
 ├── src/
 │   ├── backend/        # .NET API Source Code
+│   ├── frontend/       # React Application (Vite/Vitest)
 │   └── database/       # SQL Initialization Scripts
 ├── qa/
-│   └── postman/        # Integration Testing Collections
+│   ├── postman/        # API Integration Tests
+│   └── Playwright/     # E2E Test Suite (Playwright)
 └── docker-compose.yml  # Container Orchestration
 ```
 
@@ -173,23 +175,89 @@ The frontend is built with a modern, high-performance stack optimized for type s
 - **Framework**: [React 19](https://react.dev/) (Latest stable)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Testing**: [Vitest (Unit) & Playwright (E2E)](https://vitest.dev/) (https://playwright.dev/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest) (React Query)
 - **Form Management**: [React Hook Form](https://react-hook-form.com/)
 - **Linting**: [ESLint 9+](https://eslint.org/) (Flat Config)
 - **Formatting**: [Prettier](https://prettier.io/)
 
+## Quality Assurance & Testing
+
+This project employs a **"Shift Left" testing strategy** with a strict CI pipeline to ensure code quality before merging. The architecture is split into two distinct domains:
+
+### Architecture
+
+- **Frontend (`src/frontend`)**
+  - Unit Tests
+  - Linting
+  - Type Checking
+
+- **QA (`qa/Playwright`)**
+  - End-to-End (E2E) tests isolated from the source code
+
 ---
 
-### Quality Control (CI/CD)
+## Continuous Integration (CI)
 
-To maintain a high standard of code health, the frontend quality is enforced via a dedicated GitHub Action workflow (`frontend-ci.yml`). Every push or pull request involving the `src/frontend/**` path triggers the following pipeline:
+We use **GitHub Actions** to automatically verify every **push** and **pull request** to `master`.  
+The Frontend CI pipeline runs the following checks in order:
 
-1.  **Dependency Verification**: Uses `npm ci` to ensure a clean, reproducible installation based strictly on the `package-lock.json`.
-2.  **Formatting Check**: Validates that all code adheres to the defined Prettier rules. The build will fail if code is not properly formatted.
-3.  **Linter Scan**: Runs ESLint to identify potential bugs, security vulnerabilities, and code smells before they reach production.
+1. **Linting**  
+   Checks for code style and potential errors (ESLint).
+
+2. **Formatting**  
+   Ensures code style consistency (Prettier).
+
+3. **Type Checking**  
+   Strict TypeScript validation (`tsc`).
+
+4. **Unit Tests**  
+   Component logic verification (Vitest).
+
+5. **E2E Tests**  
+   Full browser simulation (Playwright).
+
+> **Note:**  
+> The CI uses a _working-directory strategy_ to handle the separate `package.json` files for the frontend and the QA suite.
+
+## Running Tests Locally
+
+Since the project uses two separate package configurations, tests must be run from their respective folders.
 
 ---
+
+### 1. Unit Tests (Vitest)
+
+Runs fast, headless tests for individual components.
+
+````bash
+cd src/frontend
+
+npm run test        # Run once
+npm run test:watch  # Run in watch mode
+
+### End-to-End Tests (Playwright)
+
+Runs full browser automation using the **Page Object Model (POM)**.
+You do **not** need to start the dev server manually—Playwright handles this automatically via the `webServer` configuration.
+
+```bash
+cd qa/Playwright
+
+# Install dependencies (first time only)
+npm install
+npx playwright install --with-deps
+
+# Run all E2E tests (Headless - Fast)
+npx playwright test
+
+# Run with UI (Visual Mode - Best for debugging)
+npx playwright test --ui
+
+# Run specifically on Chromium / Firefox / WebKit
+npx playwright test --project=chromium
+
 
 ### Available Scripts
 
@@ -202,3 +270,4 @@ From the `src/frontend` directory, you can run:
 | `npm run lint`     | Runs the ESLint check.                         |
 | `npm run lint:fix` | Automatically fixes repairable linting issues. |
 | `npm run format`   | Formats the entire codebase using Prettier.    |
+````
