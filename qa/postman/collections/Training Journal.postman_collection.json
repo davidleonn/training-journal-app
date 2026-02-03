@@ -47,7 +47,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"validateStatusCode(pm, 201);"
+									"validateStatusCode(pm, 201);",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    const id = response.id;",
+									"    pm.collectionVariables.set(\"userId\", id);",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -228,6 +234,10 @@
 	"variable": [
 		{
 			"key": "url",
+			"value": ""
+		},
+		{
+			"key": "userId",
 			"value": ""
 		}
 	]
