@@ -2,9 +2,9 @@
   "name": "qa",
   "version": "1.0.0",
   "scripts": {
-    "test": "cross-env playwright test",
-    "test:ui": "cross-env playwright test --ui",
-    "test:debug": "cross-env playwright test --debug",
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },

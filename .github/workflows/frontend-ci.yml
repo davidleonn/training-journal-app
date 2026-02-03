@@ -3,10 +3,10 @@ name: Frontend CI
 on:
   push:
     branches: ["master"]
-    paths: ["src/frontend/**", "qa/**", "playwright.config.ts"] # Added QA paths
+    paths: ["src/frontend/**", "qa/Playwright/**"]
   pull_request:
     branches: ["master"]
-    paths: ["src/frontend/**", "qa/**", "playwright.config.ts"]
+    paths: ["src/frontend/**", "qa/Playwright/**"]
 
 jobs:
   quality-assurance:
@@ -45,13 +45,9 @@ jobs:
       # --- PLAYWRIGHT SECTION ---
 
       - name: Install Playwright Browsers
-        # Run from root because playwright is usually at the root
         run: npx playwright install --with-deps
 
       - name: Run Playwright E2E Tests
-        # Playwright will use the 'webServer' config to start your frontend
-        run: npx playwright test
-
-      - name: Run Playwright E2E Tests
-        # 'list' reporter prints each test's pass/fail status directly in the logs
-        run: npx playwright test --reporter=list
+        # -c tells Playwright where the config file is
+        # --reporter=list gives you the clean pass/fail output in the console
+        run: npx playwright test -c qa/Playwright/playwright.config.ts --reporter=list
