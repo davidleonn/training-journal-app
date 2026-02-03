@@ -20,9 +20,14 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: "./src/frontend/package-lock.json"
+          # FIX: Cache BOTH frontend and QA dependencies
+          cache-dependency-path: |
+            src/frontend/package-lock.json
+            qa/Playwright/package-lock.json
 
-      - name: Install Dependencies
+      # --- FRONTEND SECTION ---
+
+      - name: Install Frontend Dependencies
         working-directory: ./src/frontend
         run: npm ci
 
@@ -44,10 +49,16 @@ jobs:
 
       # --- PLAYWRIGHT SECTION ---
 
+      - name: Install QA Dependencies
+        working-directory: ./qa/Playwright
+        # IMPORTANT: This requires a package-lock.json in qa/Playwright to exist!
+        run: npm ci
+
       - name: Install Playwright Browsers
+        working-directory: ./qa/Playwright
         run: npx playwright install --with-deps
 
       - name: Run Playwright E2E Tests
-        # -c tells Playwright where the config file is
-        # --reporter=list gives you the clean pass/fail output in the console
-        run: npx playwright test -c qa/Playwright/playwright.config.ts --reporter=list
+        working-directory: ./qa/Playwright
+        # No -c needed because we are running inside the folder
+        run: npx playwright test --reporter=list
