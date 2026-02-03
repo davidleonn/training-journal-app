@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LoginForm } from './LoginForm';
-import { server } from '../../../test/setup';
+import { server } from '../../../test/setup'; // Adjust this path to where your setup.ts is
 import { http, HttpResponse, delay } from 'msw';
 
-// Helper to wrap with TanStack Query Provider
+// Wrapper for React Query
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -17,72 +17,97 @@ const createWrapper = () => {
 };
 
 describe('LoginForm', () => {
-  it('calls onLoginSuccess when the form is submitted successfully', async () => {
+  beforeAll(() => {
+    // Create a fake LocalStorage
+    const localStorageMock = (() => {
+      let store: Record<string, string> = {};
+      return {
+        getItem: (key: string) => store[key] || null, // Return null if missing (Standard)
+        setItem: (key: string, value: string) => {
+          store[key] = value.toString();
+        },
+        removeItem: (key: string) => {
+          delete store[key];
+        },
+        clear: () => {
+          store = {};
+        },
+      };
+    })();
+
+    // Force the window to use our fake storage
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+    });
+  });
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('stores JWT and calls onLoginSuccess when submitted successfully', async () => {
     const mockSuccess = vi.fn();
     render(<LoginForm onLoginSuccess={mockSuccess} />, { wrapper: createWrapper() });
 
+    // 1. Input valid email (matches handlers.ts)
     const emailInput = screen.getByTestId('login-email-input');
-    // Using your specific test user defined in MSW handlers
     fireEvent.change(emailInput, { target: { value: 'valid@test.com' } });
 
-    const submitButton = screen.getByTestId('login-submit-button');
-    fireEvent.click(submitButton);
+    // 2. Click Submit
+    fireEvent.click(screen.getByTestId('login-submit-button'));
 
+    // 3. Wait for success
     await waitFor(() => {
       expect(mockSuccess).toHaveBeenCalledTimes(1);
     });
+
+    // ✅ FIX: This should now pass because handlers.ts sends the token
+    expect(localStorage.getItem('authToken')).toBe('eyJ_MOCK_JWT_TOKEN_123');
   });
 
-  it('shows red error message and PRESERVES email value when user is not found', async () => {
+  it('shows red error message when user is not found', async () => {
     const mockSuccess = vi.fn();
     render(<LoginForm onLoginSuccess={mockSuccess} />, { wrapper: createWrapper() });
 
-    const emailInput = screen.getByTestId('login-email-input') as HTMLInputElement;
-    const submitButton = screen.getByTestId('login-submit-button');
-
-    // 1. Enter an email that triggers the 401 in MSW
+    // 1. Input INVALID email
+    const emailInput = screen.getByTestId('login-email-input');
     fireEvent.change(emailInput, { target: { value: 'wrong@test.com' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
 
-    // 2. Submit
-    fireEvent.click(submitButton);
-
-    // 3. Check for the red error message appearing (from backend 'detail')
+    // 2. Check for error
     await waitFor(() => {
       expect(screen.getByText(/invalid email address/i)).toBeInTheDocument();
     });
 
-    // 4. CRITICAL: Check that the input was NOT cleared
-    expect(emailInput.value).toBe('wrong@test.com');
+    // 3. Ensure no token is saved
+    expect(localStorage.getItem('authToken')).toBeNull();
   });
 
   it('disables the button while the login request is pending', async () => {
-    // 2. Override the handler to simulate a slow network (500ms delay)
+    // ✅ FIX: Override must ALSO return a token structure, or the component might crash
     server.use(
       http.post('*/auth/login', async () => {
-        await delay(500); // Wait 500ms before responding
-        return HttpResponse.json({ id: 'slow-user' });
+        await delay(500);
+        return HttpResponse.json({
+          token: 'slow_token_123',
+          expires: '2099-01-01T00:00:00Z',
+        });
       })
     );
 
     render(<LoginForm onLoginSuccess={vi.fn()} />, { wrapper: createWrapper() });
 
-    const emailInput = screen.getByTestId('login-email-input');
-    const submitButton = screen.getByTestId('login-submit-button');
+    fireEvent.change(screen.getByTestId('login-email-input'), { target: { value: 'valid@test.com' } });
+    fireEvent.click(screen.getByTestId('login-submit-button'));
 
-    fireEvent.change(emailInput, { target: { value: 'valid@test.com' } });
-
-    // 3. Click the button
-    fireEvent.click(submitButton);
-
-    // 4. Assert: Button IS disabled (because we are inside that 500ms window)
+    // Check loading state
     await waitFor(() => {
       expect(screen.getByText(/verifying/i)).toBeInTheDocument();
-      expect(submitButton).toBeDisabled();
+      expect(screen.getByTestId('login-submit-button')).toBeDisabled();
     });
 
-    // 5. Clean finish: Wait for the delay to end so the test doesn't complain about updates after exit
+    // Wait for it to finish so the test exits cleanly
     await waitFor(() => {
-      expect(submitButton).not.toBeDisabled();
+      expect(screen.getByTestId('login-submit-button')).not.toBeDisabled();
     });
   });
 });

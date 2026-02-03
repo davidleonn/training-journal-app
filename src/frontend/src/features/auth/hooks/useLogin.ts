@@ -1,16 +1,30 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/api/axios';
-import { User, LoginRequest } from '../types';
+import { LoginRequest } from '../types';
+import { AxiosError } from 'axios';
+
+interface LoginResponse {
+  token: string;
+  expires: string;
+}
 
 export const useLogin = (onLoginSuccess: () => void) => {
   return useMutation({
-    mutationFn: async (data: LoginRequest) => {
-      const response = await api.post<User>('/auth/login', data);
+    mutationFn: async (credentials: LoginRequest) => {
+      // API call
+      const response = await api.post<LoginResponse>('/auth/login', credentials);
       return response.data;
     },
-    onSuccess: (user) => {
-      localStorage.setItem('user_id', user.id);
+    onSuccess: (data) => {
+      // 1. Save Token
+      localStorage.setItem('authToken', data.token);
+
+      // 2. Navigate (The callback from your page)
       onLoginSuccess();
+    },
+    onError: (error: AxiosError) => {
+      // Now we just log it, but the Component will use the 'isError' flag
+      console.error('Login Failed:', error.response?.data || error.message);
     },
   });
 };

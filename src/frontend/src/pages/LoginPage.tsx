@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { LoginForm } from '@/features'; // Pointing to the local component
+import { LoginForm } from '@/features';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLoginSuccess = () => {
+    // Only navigate when the Form tells us it's safe
     navigate('/dashboard');
   };
 
@@ -18,6 +19,7 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-3xl font-black tracking-tight text-slate-900">Training Journal</h1>
         </div>
 
+        {/* We pass the callback, but the Form handles the data */}
         <LoginForm onLoginSuccess={handleLoginSuccess} />
       </div>
     </div>
