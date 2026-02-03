@@ -7,3 +7,15 @@ export interface User {
 export interface LoginRequest {
   email: string;
 }
+
+export interface LoginFormProps {
+  onLoginSuccess: () => void;
+}
+
+export interface ApiError {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}

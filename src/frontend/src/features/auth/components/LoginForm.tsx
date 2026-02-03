@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { Button, Input } from '@/components';
 import { useLogin } from '../hooks/useLogin';
-
-interface LoginFormProps {
-  onLoginSuccess: () => void;
-}
+import { ApiError, LoginFormProps } from '../types';
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   // 1. Explicitly track the email in state
@@ -12,9 +9,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
   const { mutate: login, isPending, error } = useLogin(onLoginSuccess);
 
-  const apiError = error ? (error as any).response?.data?.detail || 'Authentication failed' : undefined;
+  const apiError = (error as ApiError | null)?.response?.data?.detail || (error ? 'Authentication failed' : undefined);
 
-  const handleAction = async (_formData: FormData) => {
+  const handleAction = async () => {
     // 2. We use the state value directly
     if (email) {
       login({ email });
