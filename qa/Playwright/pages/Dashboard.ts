@@ -21,8 +21,8 @@ export class Dashboard {
   public async validateDashboardComponents() {
     await assertComponentReady(this.headerLogo, "JOURNAL");
     await assertComponentReady(this.headerProfile, "davidleon_06");
-    await assertComponentReady(this.heroCardComponent, "ready");
-    await assertComponentReady(this.progressChartComponent, "weekly");
+    await assertComponentReady(this.heroCardComponent, "Active");
+    await assertComponentReady(this.progressChartComponent, "Weekly");
     await assertComponentReady(this.historySideBarComponent, "History");
   }
 

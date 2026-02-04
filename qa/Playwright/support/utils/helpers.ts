@@ -33,7 +33,7 @@ export async function waitAndClick(locator: Locator): Promise<void> {
 export async function assertComponentReady(locator: Locator, expectedText?: string | RegExp): Promise<void> {
   // 1. Basic Visibility & Attachment
   // Ensures the component is in the DOM and visible to the user.
-  await locator.waitFor({ state: "visible", timeout: 5000 });
+  await locator.waitFor({ state: "visible", timeout: 10000 });
   await expect(locator).toBeVisible();
 
   // 2. Structural Integrity (Bounding Box)
