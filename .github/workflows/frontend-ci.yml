@@ -25,6 +25,19 @@ jobs:
             src/frontend/package-lock.json
             qa/Playwright/package-lock.json
 
+      # --- BACKEND PREPARATION (The Bridge) ---
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0"
+
+      - name: Start Services (Docker)
+        # This builds the real API and Database
+        run: |
+          docker compose up -d --build
+          echo "Waiting for SQL Server and API to be healthy..."
+          sleep 20
+
       # --- FRONTEND SECTION ---
 
       - name: Install Frontend Dependencies
@@ -51,7 +64,6 @@ jobs:
 
       - name: Install QA Dependencies
         working-directory: ./qa/Playwright
-        # IMPORTANT: This requires a package-lock.json in qa/Playwright to exist!
         run: npm ci
 
       - name: Install Playwright Browsers
@@ -60,5 +72,11 @@ jobs:
 
       - name: Run Playwright E2E Tests
         working-directory: ./qa/Playwright
-        # No -c needed because we are running inside the folder
         run: npx playwright test --reporter=list
+        env:
+          VITE_API_URL: http://localhost:5254
+          CI: true
+
+      - name: Stop Services
+        if: always()
+        run: docker compose down
