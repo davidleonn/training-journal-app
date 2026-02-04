@@ -1,5 +1,6 @@
 import { test } from "@playwright/test";
 import { App } from "../pages/App";
+import { verifyNavigation } from "../support";
 
 let app: App;
 
@@ -16,6 +17,7 @@ test.describe.parallel("Login Happy Path", () => {
       await app.login.doLogin(email);
     });
     await test.step("Validate dashboard & Logout", async () => {
+      await verifyNavigation(app.page, "dashboard");
       await app.dashboard.validateDashboardComponents();
       await app.dashboard.doLogout();
     });

@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Locator, Page, expect } from "@playwright/test";
 
 /**
  * Wait for a locator to be visible and then fill it with the provided value.
@@ -59,4 +59,33 @@ export async function assertComponentReady(locator: Locator, expectedText?: stri
       setTimeout(() => resolve(true), 500); // Fail-safe
     });
   });
+}
+
+/**
+ * Verifies navigation to the correct page
+ * @param page - Playwright Page object
+ * @param culture - Culture code (e.g., 'es-ES', 'en-GB')
+ * @param pageName - Name of the page to verify
+ * @param flow - Flow name (e.g., 'booking', 'checkin')
+ * @param options - Optional configuration
+ */
+
+export async function verifyNavigation(page: Page, pageName: string, options: { timeout?: number } = {}) {
+  const { timeout = 10000 } = options;
+
+  try {
+    await page.waitForURL(`**${pageName}`, {
+      timeout,
+      waitUntil: "domcontentloaded" // Faster than 'load' for React apps
+    });
+
+    expect(page.url()).toContain(pageName);
+
+    console.log(`Navigated to: ${pageName}`);
+  } catch (error) {
+    throw new Error(`Navigation failed:
+      - Expected Path: ${pageName}
+      - Actual URL: ${page.url()}
+    `);
+  }
 }
