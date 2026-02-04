@@ -9,7 +9,9 @@ using TrainingJournal.API.Services;
 using TrainingJournal.API.Services.Interfaces;
 using TrainingJournal.API.Infrastructure.Security;
 using TrainingJournal.API.Core.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
 
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["JwtSettings:Key"];
 if (string.IsNullOrEmpty(jwtKey))

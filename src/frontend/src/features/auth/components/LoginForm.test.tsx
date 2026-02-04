@@ -19,7 +19,7 @@ const createWrapper = () => {
 describe('LoginForm', () => {
   beforeAll(() => {
     // Create a fake LocalStorage
-    const localStorageMock = (() => {
+    const sessionStorageMock = (() => {
       let store: Record<string, string> = {};
       return {
         getItem: (key: string) => store[key] || null, // Return null if missing (Standard)
@@ -36,12 +36,12 @@ describe('LoginForm', () => {
     })();
 
     // Force the window to use our fake storage
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
+    Object.defineProperty(window, 'sessionStorage', {
+      value: sessionStorageMock,
     });
   });
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('stores JWT and calls onLoginSuccess when submitted successfully', async () => {
@@ -61,7 +61,7 @@ describe('LoginForm', () => {
     });
 
     // ✅ FIX: This should now pass because handlers.ts sends the token
-    expect(localStorage.getItem('authToken')).toBe('eyJ_MOCK_JWT_TOKEN_123');
+    expect(sessionStorage.getItem('authToken')).toBe('eyJ_MOCK_JWT_TOKEN_123');
   });
 
   it('shows red error message when user is not found', async () => {
@@ -79,11 +79,11 @@ describe('LoginForm', () => {
     });
 
     // 3. Ensure no token is saved
-    expect(localStorage.getItem('authToken')).toBeNull();
+    expect(sessionStorage.getItem('authToken')).toBeNull();
   });
 
   it('disables the button while the login request is pending', async () => {
-    // ✅ FIX: Override must ALSO return a token structure, or the component might crash
+    // Override must ALSO return a token structure, or the component might crash
     server.use(
       http.post('*/auth/login', async () => {
         await delay(500);

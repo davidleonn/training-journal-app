@@ -25,7 +25,7 @@ public AuthResult CreateToken(string email, string userId)
     var claims = new List<Claim>
     {
         new Claim(JwtRegisteredClaimNames.Email, email),
-        new Claim("user_id", userId)
+        new Claim(JwtRegisteredClaimNames.Sub, userId)
     };
 
     var tokenDescriptor = new SecurityTokenDescriptor

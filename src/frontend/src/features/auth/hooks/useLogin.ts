@@ -17,7 +17,7 @@ export const useLogin = (onLoginSuccess: () => void) => {
     },
     onSuccess: (data) => {
       // 1. Save Token
-      localStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authToken', data.token);
 
       // 2. Navigate (The callback from your page)
       onLoginSuccess();
