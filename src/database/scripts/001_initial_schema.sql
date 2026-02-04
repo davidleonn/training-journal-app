@@ -76,6 +76,7 @@ CREATE TABLE exercises_log (
     workout_id UUID NOT NULL REFERENCES workouts(id) ON DELETE CASCADE,
     
     name VARCHAR(100) NOT NULL
+    position INTEGER NOT NULL
 );
 
 -- 5. SETS TABLE (The Data)
@@ -85,7 +86,13 @@ CREATE TABLE sets (
     
     -- Links to the Exercises table above.
     exercise_id UUID NOT NULL REFERENCES exercises_log(id) ON DELETE CASCADE,
-    
+    set_number INTEGER NOT NULL
+);
+
+-- 6. REPS_LOG TABLE (New: Where the actual weight lives)
+CREATE TABLE reps_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    set_id UUID NOT NULL REFERENCES sets(id) ON DELETE CASCADE,
     weight DECIMAL(5,2) NOT NULL,
-    reps INTEGER NOT NULL
+    rep_number INTEGER NOT NULL -- e.g., Rep 1 was 100kg, Rep 2 was 90kg
 );
