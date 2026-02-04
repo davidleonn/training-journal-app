@@ -74,7 +74,7 @@ jobs:
         working-directory: ./qa/Playwright
         run: npx playwright test --reporter=list
         env:
-          VITE_API_URL: http://localhost:5254
+          VITE_API_URL: http://localhost:5001
           CI: true
 
       - name: Stop Services
