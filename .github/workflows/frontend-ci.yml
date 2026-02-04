@@ -71,7 +71,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright E2E Tests
-        working-directory: ./qa/Playwright
+        working-directory: ./qa/Playwright«
         run: npx playwright test --reporter=list
         env:
           VITE_API_URL: http://localhost:5254
