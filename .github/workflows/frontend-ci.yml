@@ -35,8 +35,11 @@ jobs:
         # This builds the real API and Database
         run: |
           docker compose up -d --build
-          echo "Waiting for SQL Server and API to be healthy..."
-          sleep 20
+          echo "Waiting for Backend API to respond on port 5001..."
+          # This loop pings the login endpoint. 
+          # It only continues once it gets a response (even a 405/400 is fine, it means the server is UP)
+          timeout 60s bash -c 'until curl -s http://localhost:5001/auth/login > /dev/null; do sleep 2; done'
+          echo "Backend is UP!"
 
       # --- FRONTEND SECTION ---
 
