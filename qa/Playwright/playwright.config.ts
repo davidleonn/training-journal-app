@@ -14,7 +14,8 @@ export default defineConfig({
     trace: "off",
     testIdAttribute: "data-testid",
     video: "off",
-    screenshot: "off"
+    screenshot: "off",
+    headless: true
   },
 
   /* Run your local dev server before starting the tests */

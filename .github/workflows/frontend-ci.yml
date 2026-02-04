@@ -68,7 +68,7 @@ jobs:
 
       - name: Install Playwright Browsers
         working-directory: ./qa/Playwright
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium --with-deps
 
       - name: Run Playwright E2E Tests
         working-directory: ./qa/Playwright
