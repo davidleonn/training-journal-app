@@ -1,14 +1,20 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { Header } from '@/components/layout/Header';
 
 export const ProtectedRoute = () => {
-  // 1. Check if the token exists
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
-  // 2. If NO token, kick them back to login
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. If YES token, render the child routes (The Dashboard)
-  return <Outlet />;
+  return (
+    <div className="min-h-screen bg-[#F8F9FA]">
+      {/* This Header now automatically appears on all protected pages */}
+      <Header />
+
+      {/* This is where Dashboard, Workouts, etc. will render */}
+      <Outlet />
+    </div>
+  );
 };

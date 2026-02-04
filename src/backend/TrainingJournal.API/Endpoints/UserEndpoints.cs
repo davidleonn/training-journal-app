@@ -2,6 +2,8 @@ using TrainingJournal.API.Models;
 using TrainingJournal.API.Repositories.Interfaces;
 using TrainingJournal.API.Contracts;
 using TrainingJournal.API.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TrainingJournal.API.Endpoints;
 
@@ -9,7 +11,22 @@ public static class UserEndpoints
 {
     public static void MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/users").WithTags("Users");
+        var group = app.MapGroup("/users").WithTags("Users").RequireAuthorization();
+
+        group.MapGet("/profile", async (ClaimsPrincipal user, IUserRepository repo) =>
+        {
+            var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var dbUser = await repo.GetByIdAsync(userId);
+            return dbUser is not null 
+            ? Results.Ok(new UserResponse(dbUser.Id, dbUser.Email, dbUser.CreatedAt)) 
+            : Results.NotFound();
+        });
 
         // GET /users
         // We map the Domain Users to UserResponses
@@ -30,7 +47,7 @@ public static class UserEndpoints
         });
 
         // POST /users
-        group.MapPost("/", async (CreateUserRequest request, UserService service) =>
+        group.MapPost("/",[AllowAnonymous] async (CreateUserRequest request, UserService service) =>
         {
             // 1. Map DTO -> Domain
             var newUser = new User

@@ -8,6 +8,72 @@
 	},
 	"item": [
 		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "1. Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 200)",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    const token = response.token;",
+									"",
+									"    pm.test(\"Token is present\", function () {",
+									"        pm.expect(token).to.not.be.null;",
+									"        pm.expect(response.expires).to.eql(60);",
+									"    })",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"davidleon_06@hotmail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Users",
 			"item": [
 				{
@@ -86,7 +152,38 @@
 					"response": []
 				},
 				{
-					"name": "3. Get user by id",
+					"name": "3. Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 200)"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/users/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Get user by id",
 					"event": [
 						{
 							"listen": "test",
@@ -117,7 +214,7 @@
 					"response": []
 				},
 				{
-					"name": "4. Delete user by id",
+					"name": "5. Delete user by id",
 					"event": [
 						{
 							"listen": "test",
@@ -147,62 +244,39 @@
 					},
 					"response": []
 				}
-			]
-		},
-		{
-			"name": "Auth",
-			"item": [
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
 				{
-					"name": "1. Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"validateStatusCode(pm, 200)",
-									"",
-									"pm.test(\"Token is present\", function () {",
-									"    pm.expect(pm.response.json().token).to.not.be.null;",
-									"    pm.expect(pm.response.json().expires).to.eql(60);",
-									"})",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"davidleon_06@hotmail.com\"\n}"
-						},
-						"url": {
-							"raw": "{{url}}/auth/login",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		}
@@ -244,6 +318,10 @@
 		},
 		{
 			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "token",
 			"value": ""
 		}
 	]
