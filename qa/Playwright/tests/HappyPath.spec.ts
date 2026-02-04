@@ -15,5 +15,9 @@ test.describe.parallel("Login Happy Path", () => {
     await test.step("Login", async () => {
       await app.login.doLogin(email);
     });
+    await test.step("Validate dashboard & Logout", async () => {
+      await app.dashboard.validateDashboardComponents();
+      await app.dashboard.doLogout();
+    });
   });
 });

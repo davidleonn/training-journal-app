@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Page, Locator } from "@playwright/test";
 import { waitAndClick, waitAndFill } from "../support";
 
 export class Login {
