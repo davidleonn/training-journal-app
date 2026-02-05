@@ -67,6 +67,7 @@ The easiest way to run the entire system (**API + Database**) is via **Docker Co
 ```bash
 # Start API and Database
 docker compose up --build
+(cd src/backend/TrainingJournal.Api && dotnet run) & (cd src/frontend && npm run dev)
 ```
 
 The API will be available at: http://localhost:5001 .

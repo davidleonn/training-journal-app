@@ -279,6 +279,482 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Workouts",
+			"item": [
+				{
+					"name": "1. Create Workout",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"createWorkoutRequest(pm);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Keep existing status code validation",
+									"validateStatusCode(pm, 201);",
+									"",
+									"// When 201, store the new workoutId for later requests",
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"workoutId\", response.id);",
+									"}",
+									"",
+									"// ----- JSON Schema validation for workout response -----",
+									"const workoutSchema = {",
+									"    type: \"object\",",
+									"    required: [\"id\", \"name\", \"date\"],",
+									"    properties: {",
+									"        id: { type: \"string\", format: \"uuid\" },",
+									"        name: { type: \"string\" },",
+									"        date: { type: \"string\", format: \"date-time\" },",
+									"",
+									"        // Optional fields you currently return",
+									"        userId: { type: \"string\", format: \"uuid\" },",
+									"        exercises: {",
+									"            type: \"array\",",
+									"            items: {",
+									"                type: \"object\",",
+									"                required: [\"id\", \"workoutId\", \"name\", \"position\", \"sets\"],",
+									"                properties: {",
+									"                    id: { type: \"string\", format: \"uuid\" },",
+									"                    workoutId: { type: \"string\", format: \"uuid\" },",
+									"                    name: { type: \"string\" },",
+									"                    position: { type: \"number\" },",
+									"                    sets: {",
+									"                        type: \"array\",",
+									"                        items: {",
+									"                            type: \"object\",",
+									"                            required: [\"id\", \"exerciseId\", \"setNumber\", \"reps\"],",
+									"                            properties: {",
+									"                                id: { type: \"string\", format: \"uuid\" },",
+									"                                exerciseId: { type: \"string\", format: \"uuid\" },",
+									"                                setNumber: { type: \"number\" },",
+									"                                reps: {",
+									"                                    type: \"array\",",
+									"                                    items: {",
+									"                                        type: \"object\",",
+									"                                        required: [\"id\", \"setId\", \"weight\", \"repNumber\"],",
+									"                                        properties: {",
+									"                                            id: { type: \"string\", format: \"uuid\" },",
+									"                                            setId: { type: \"string\", format: \"uuid\" },",
+									"                                            weight: { type: \"number\" },",
+									"                                            repNumber: { type: \"number\" }",
+									"                                        },",
+									"                                        additionalProperties: true",
+									"                                    }",
+									"                                }",
+									"                            },",
+									"                            additionalProperties: true",
+									"                        }",
+									"                    }",
+									"                },",
+									"                additionalProperties: true",
+									"            }",
+									"        }",
+									"    },",
+									"    additionalProperties: true",
+									"};",
+									"",
+									"pm.test(\"Response body matches workout JSON schema\", function () {",
+									"    if (pm.response.code !== 201) {",
+									"        pm.skip(\"Skipping schema test because status is \" + pm.response.code);",
+									"        return;",
+									"    }",
+									"    pm.response.to.have.jsonSchema(workoutSchema);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{bodyRequest}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/workouts",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"workouts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get all workouts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 200)",
+									"",
+									"// JSON Schema validation",
+									"const schema = {",
+									"    type: \"array\",",
+									"    items: {",
+									"        type: \"object\",",
+									"        required: [\"id\", \"name\", \"date\"],",
+									"        properties: {",
+									"            id: { type: \"string\", format: \"uuid\" },",
+									"            name: { type: \"string\" },",
+									"            date: { type: \"string\", format: \"date-time\" }",
+									"        },",
+									"        additionalProperties: true",
+									"    }",
+									"};",
+									"",
+									"pm.test(\"Response matches JSON schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/workouts",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"workouts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get workout by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Status code validation (equivalent to your validateStatusCode(pm, 200))",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// JSON Schema for GET workout by id",
+									"const workoutSchema = {",
+									"    type: \"object\",",
+									"    required: [\"id\", \"name\", \"date\", \"userId\", \"exercises\"],",
+									"    properties: {",
+									"        id: { type: \"string\", format: \"uuid\" },",
+									"        userId: { type: \"string\", format: \"uuid\" },",
+									"        name: { type: \"string\" },",
+									"        date: { type: \"string\", format: \"date-time\" },",
+									"        exercises: {",
+									"            type: \"array\",",
+									"            items: {",
+									"                type: \"object\",",
+									"                required: [\"id\", \"workoutId\", \"name\", \"position\", \"sets\"],",
+									"                properties: {",
+									"                    id: { type: \"string\", format: \"uuid\" },",
+									"                    workoutId: { type: \"string\", format: \"uuid\" },",
+									"                    name: { type: \"string\" },",
+									"                    position: { type: \"number\" },",
+									"                    sets: {",
+									"                        type: \"array\",",
+									"                        items: {",
+									"                            type: \"object\",",
+									"                            required: [\"id\", \"exerciseId\", \"setNumber\", \"reps\"],",
+									"                            properties: {",
+									"                                id: { type: \"string\", format: \"uuid\" },",
+									"                                exerciseId: { type: \"string\", format: \"uuid\" },",
+									"                                setNumber: { type: \"number\" },",
+									"                                reps: {",
+									"                                    type: \"array\",",
+									"                                    items: {",
+									"                                        type: \"object\",",
+									"                                        required: [\"id\", \"setId\", \"weight\", \"repNumber\"],",
+									"                                        properties: {",
+									"                                            id: { type: \"string\", format: \"uuid\" },",
+									"                                            setId: { type: \"string\", format: \"uuid\" },",
+									"                                            weight: { type: \"number\" },",
+									"                                            repNumber: { type: \"number\" }",
+									"                                        },",
+									"                                        additionalProperties: true",
+									"                                    }",
+									"                                }",
+									"                            },",
+									"                            additionalProperties: true",
+									"                        }",
+									"                    }",
+									"                },",
+									"                additionalProperties: true",
+									"            }",
+									"        }",
+									"    },",
+									"    additionalProperties: true",
+									"};",
+									"",
+									"// Main schema validation",
+									"pm.test(\"Response body matches workout JSON schema\", function () {",
+									"    pm.response.to.have.jsonSchema(workoutSchema);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{bodyRequest}}"
+						},
+						"url": {
+							"raw": "{{url}}/workouts/{{workoutId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"workouts",
+								"{{workoutId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Update workout by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 204);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"createWorkoutRequest(pm);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{bodyRequest}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/workouts/{{workoutId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"workouts",
+								"{{workoutId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Delete workout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"validateStatusCode(pm, 204);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/workouts/{{workoutId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"workouts",
+								"{{workoutId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							"const createRep = (weight, repNumber) => {",
+							"    return {",
+							"        \"weight\": weight,",
+							"        \"repNumber\": repNumber",
+							"    };",
+							"};",
+							"",
+							"const createSet = (setNumber) => {",
+							"    return {",
+							"        \"setNumber\": setNumber,",
+							"        \"reps\": []",
+							"    };",
+							"};",
+							"",
+							"const createExercise = (name, position) => {",
+							"    return {",
+							"        \"name\": name,",
+							"        \"position\": position,",
+							"        \"sets\": []",
+							"    };",
+							"};",
+							"",
+							"const createWorkout = (name) => {",
+							"    return {",
+							"        \"name\": name,",
+							"        \"date\": new Date().toISOString(),",
+							"        \"exercises\": []",
+							"    };",
+							"};",
+							"",
+							"// --- 2. SMART HELPER (Accepts Array of Weights) ---",
+							"// usage: addSets(exercise, repsPerSet, [weight1, weight2, weight3])",
+							"const addSets = (exercise, reps, weights) => {",
+							"    // We loop through the list of weights you provided",
+							"    for (let i = 0; i < weights.length; i++) {",
+							"        let currentWeight = weights[i];",
+							"        let setNum = i + 1; // Sets start at 1",
+							"        let set = createSet(setNum);",
+							"        // Add the reps with the specific weight for THIS set",
+							"        set.reps.push(createRep(currentWeight, reps));",
+							"        exercise.sets.push(set);",
+							"    }",
+							"};",
+							"",
+							"createWorkoutRequest = function (pm) {",
+							"    // Create workou",
+							"    let myWorkout = createWorkout(\"Leg Day\");",
+							"",
+							"    // Create exercises",
+							"    let legExtensions = createExercise(\"Leg exstensions\", 1);",
+							"    let inclineLegPress = createExercise(\"Incline leg Press\", 2);",
+							"    let walkingLunges = createExercise(\"Dumbbell Walking Lunges:\", 3);",
+							"    let romanianDeadlift = createExercise(\"Dumbbell Romanian Deadlift\", 4);",
+							"    let calfRaises = createExercise(\"Standing Machine Calf Raises\", 5);",
+							"    let hipAbductions = createExercise(\"Machine Hip Abductions\", 6);",
+							"",
+							"    // Leg Extensions: 4 sets of 20 reps. Weights:",
+							"    addSets(legExtensions, 20, [43, 43, 50, 50]);",
+							"",
+							"    // Leg Press: 4 sets of 15 reps.",
+							"    addSets(inclineLegPress, 15, [40, 40, 40, 50]);",
+							"",
+							"    // Lunges: 3 sets of 20 steps. Constant weight",
+							"    addSets(walkingLunges, 20, [12.5, 12.5, 12.5]);",
+							"",
+							"    // RDL: 3 sets of 15 reps. Increasing weight.",
+							"    addSets(romanianDeadlift, 15, [30, 30, 30]);",
+							"",
+							"    // Calf Raises: 4 sets of 20 reps.",
+							"    addSets(calfRaises, 20, [10, 10, 10, 10]);",
+							"",
+							"    // Hip Abductions: 3 sets of 20 reps.",
+							"    addSets(hipAbductions, 20, [63, 63, 71]);",
+							"",
+							"    // Add to workout",
+							"    myWorkout.exercises.push(legExtensions, inclineLegPress, walkingLunges, romanianDeadlift, calfRaises, hipAbductions);",
+							"",
+							"",
+							"    pm.collectionVariables.set(\"bodyRequest\", JSON.stringify(myWorkout));",
+							"",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
@@ -322,6 +798,14 @@
 		},
 		{
 			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "bodyRequest",
+			"value": ""
+		},
+		{
+			"key": "workoutId",
 			"value": ""
 		}
 	]

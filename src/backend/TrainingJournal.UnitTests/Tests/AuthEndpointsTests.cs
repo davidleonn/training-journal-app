@@ -3,9 +3,11 @@ using NSubstitute;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TrainingJournal.API.Endpoints;
 using TrainingJournal.API.Services.Interfaces;
-using TrainingJournal.API.Core.Interfaces; // Verify this matches your ITokenService namespace
+using TrainingJournal.API.Core.Interfaces; 
 using TrainingJournal.API.Contracts;
 using TrainingJournal.API.Models;
+
+namespace TrainingJournal.UnitTests.Tests;
 
 public class AuthEndpointsTests
 {
