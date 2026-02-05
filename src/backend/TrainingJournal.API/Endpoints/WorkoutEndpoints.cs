@@ -1,94 +1,113 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using TrainingJournal.Api.Models;
-using TrainingJournal.API.Contracts; // 👈 Don't forget this using
-using TrainingJournal.API.Repositories.Interfaces;
+using TrainingJournal.API.Contracts;
+using TrainingJournal.API.Services.Interfaces;
+using FluentValidation;
 
 namespace TrainingJournal.API.Endpoints;
 
 public static class WorkoutEndpoints
 {
-    // Use 'this IEndpointRouteBuilder app' to match your UserEndpoints style
     public static void MapWorkoutEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/workouts").WithTags("Workouts").RequireAuthorization();
 
-        // GET /workouts (History)
-        group.MapGet("/", async (IWorkoutRepository repo) =>
+        group.MapGet("/", HandleGetAll);
+        group.MapGet("/{id:guid}", HandleGetById);
+        group.MapPost("/", HandleCreate);
+        group.MapPut("/{id:guid}", HandleUpdate);
+        group.MapDelete("/{id:guid}", HandleDelete);
+    }
+
+    // GET ALL (Summary)
+    public static async Task<IResult> HandleGetAll(IWorkoutService service, ClaimsPrincipal user)
+    {
+        var userId = GetUserId(user);
+        if (userId == Guid.Empty) return Results.Unauthorized();
+
+        var summaries = await service.GetAllSummariesAsync(userId);
+        return Results.Ok(summaries);
+    }
+
+    // GET SINGLE
+    public static async Task<IResult> HandleGetById(Guid id, IWorkoutService service, ClaimsPrincipal user)
+    {
+        var userId = GetUserId(user);
+        if (userId == Guid.Empty) return Results.Unauthorized();
+
+        // Return 404 if service returns null
+        var workout = await service.GetByIdAsync(id, userId) ?? throw new KeyNotFoundException($"Workout with id {id} was not found.");
+        return Results.Ok(workout);
+    }
+
+    // CREATE
+    public static async Task<IResult> HandleCreate(
+        [FromBody] CreateWorkoutRequest request, 
+        IWorkoutService service, 
+        IValidator<CreateWorkoutRequest> validator,
+        ClaimsPrincipal user)
+    {
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            var workouts = await repo.GetAllAsync();
-            
-            // MAP: Domain Model -> API Response
-            var response = workouts.Select(w => new WorkoutResponse(
-                w.Id, w.UserId, w.Name, w.Date, w.Exercises
-            ));
-            
-            return Results.Ok(response);
-        });
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        var userId = GetUserId(user);
+        if (userId == Guid.Empty) return Results.Unauthorized();
 
-        // GET /workouts/{id} (Single Session)
-        group.MapGet("/{id:guid}", async (Guid id, IWorkoutRepository repo) =>
+        try 
         {
-            var workout = await repo.GetByIdAsync(id);
-            
-            return workout is not null
-                ? Results.Ok(new WorkoutResponse(workout.Id, workout.UserId, workout.Name, workout.Date, workout.Exercises))
-                : Results.NotFound();
-        });
-
-        // POST /workouts (Save New)
-        group.MapPost("/", async ([FromBody] CreateWorkoutRequest request, IWorkoutRepository repo, ClaimsPrincipal user) =>
+            var response = await service.CreateAsync(request, userId);
+            return Results.Created($"/workouts/{response.Id}", response);
+        }
+        catch (InvalidOperationException ex) // Catch the Duplicate error
         {
-            // 1. Security: Get User ID from Token
-            var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Results.Unauthorized();
+            return Results.Conflict(new { message = ex.Message });
+        }
+    }
 
-            // 2. MAP: Contract (Request) -> Domain Model (Database)
-            var newWorkout = new Workout
-            {
-                Id = Guid.NewGuid(), // We generate the ID here
-                UserId = userId,
-                Name = request.Name,
-                Date = request.Date,
-                Exercises = request.Exercises
-            };
-
-            // 3. Save to DB
-            var success = await repo.CreateFullWorkoutAsync(newWorkout);
-
-            if (!success) return Results.Problem("Failed to save workout.");
-
-            // 4. Return the Response Contract
-            var response = new WorkoutResponse(newWorkout.Id, newWorkout.UserId, newWorkout.Name, newWorkout.Date, newWorkout.Exercises);
-            return Results.Created($"/workouts/{newWorkout.Id}", response);
-        });
-
-        // PUT /workouts/{id} (Update Existing)
-        group.MapPut("/{id:guid}", async (Guid id, [FromBody] UpdateWorkoutRequest request, IWorkoutRepository repo, ClaimsPrincipal user) =>
+    // UPDATE
+    public static async Task<IResult> HandleUpdate(
+        Guid id, 
+        [FromBody] UpdateWorkoutRequest request, 
+        IWorkoutService service,
+        IValidator<UpdateWorkoutRequest> validator, 
+        ClaimsPrincipal user)
+    {
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Results.Unauthorized();
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        var userId = GetUserId(user);
+        if (userId == Guid.Empty) return Results.Unauthorized();
 
-            // MAP: Contract -> Domain Model
-            var workoutToUpdate = new Workout
-            {
-                Id = id, // Use the ID from the URL
-                UserId = userId, // Important: prevents stealing other users' workouts
-                Name = request.Name,
-                Date = request.Date,
-                Exercises = request.Exercises
-            };
+        var success = await service.UpdateAsync(id, request, userId);
 
-            var success = await repo.UpdateFullWorkoutAsync(workoutToUpdate);
+        if (!success)
+            throw new KeyNotFoundException($"Workout with id {id} was not found or access is denied.");
+        
+        return Results.NoContent();
+    }
 
-            return success ? Results.NoContent() : Results.NotFound();
-        });
+    // DELETE
+    public static async Task<IResult> HandleDelete(Guid id, IWorkoutService service, ClaimsPrincipal user)
+    {
+        var userId = GetUserId(user);
+        if (userId == Guid.Empty) return Results.Unauthorized();
 
-        // DELETE /workouts/{id}
-        group.MapDelete("/{id:guid}", async (Guid id, IWorkoutRepository repo) =>
-        {
-            var success = await repo.DeleteAsync(id);
-            return success ? Results.NoContent() : Results.NotFound();
-        });
+        var success = await service.DeleteAsync(id, userId);
+
+        if (!success)
+             throw new KeyNotFoundException($"Workout with id {id} was not found or access is denied.");
+
+        return Results.NoContent();
+    }
+
+    // Helper just for Claims
+    private static Guid GetUserId(ClaimsPrincipal user)
+    {
+        var idString = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(idString, out var id) ? id : Guid.Empty;
     }
 }

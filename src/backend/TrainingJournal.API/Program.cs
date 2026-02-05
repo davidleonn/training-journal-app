@@ -12,9 +12,12 @@ using TrainingJournal.API.Services.Interfaces;
 using TrainingJournal.API.Infrastructure.Security;
 using TrainingJournal.API.Core.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using FluentValidation;
+using TrainingJournal.API.Validators;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var builder = WebApplication.CreateBuilder(args);
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // --- 1. Add Services ---
 
@@ -67,6 +70,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateWorkoutValidator>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails(); 
 

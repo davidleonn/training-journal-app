@@ -3,9 +3,8 @@ using NSubstitute;
 using TrainingJournal.API.Models;
 using TrainingJournal.API.Repositories.Interfaces;
 using TrainingJournal.API.Services;
-using Xunit;
 
-namespace TrainingJournal.UnitTests.UserServiceTests;
+namespace TrainingJournal.UnitTests.Tests;
 
 public class UserServiceTests
 {

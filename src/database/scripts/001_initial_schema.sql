@@ -75,7 +75,7 @@ CREATE TABLE exercises_log (
     -- Links to the Workouts table above.
     workout_id UUID NOT NULL REFERENCES workouts(id) ON DELETE CASCADE,
     
-    name VARCHAR(100) NOT NULL
+    name VARCHAR(100) NOT NULL,
     position INTEGER NOT NULL
 );
 

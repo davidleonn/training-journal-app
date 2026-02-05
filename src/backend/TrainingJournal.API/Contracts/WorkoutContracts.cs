@@ -1,27 +1,72 @@
-using TrainingJournal.Api.Models;
-
 namespace TrainingJournal.API.Contracts;
 
-// 1. REQUEST: What the frontend sends to CREATE a workout
-// We don't ask for ID or UserId because the System/Token handles that.
 public record CreateWorkoutRequest(
     string Name, 
     DateTimeOffset Date, 
-    List<ExerciseLog> Exercises // Reusing Domain Model for the nested list to keep it simple
+    List<WorkoutExerciseInputDto> Exercises
 );
 
-// 2. REQUEST: What the frontend sends to UPDATE a workout
 public record UpdateWorkoutRequest(
     string Name, 
     DateTimeOffset Date, 
-    List<ExerciseLog> Exercises
+    List<WorkoutExerciseInputDto> Exercises
 );
 
-// 3. RESPONSE: What we send back to the frontend
+// We reuse these "Input DTOs" for both Create and Update
+public record WorkoutExerciseInputDto(
+    string Name, 
+    int Position, 
+    List<WorkoutSetInputDto> Sets
+);
+
+public record WorkoutSetInputDto(
+    int SetNumber, 
+    List<WorkoutRepInputDto> Reps
+);
+
+public record WorkoutRepInputDto(
+    decimal Weight, 
+    int RepNumber
+);
+
+
+// ==========================================
+// 📤 OUTPUTS (Responses to Frontend)
+// These include all the Database IDs.
+// ==========================================
+
 public record WorkoutResponse(
     Guid Id, 
     Guid UserId, 
     string Name, 
     DateTimeOffset Date, 
-    List<ExerciseLog> Exercises
+    List<ExerciseResponseDto> Exercises
+);
+
+public record ExerciseResponseDto(
+    Guid Id, 
+    Guid WorkoutId, 
+    string Name, 
+    int Position, 
+    List<SetResponseDto> Sets
+);
+
+public record SetResponseDto(
+    Guid Id, 
+    Guid ExerciseId, 
+    int SetNumber, 
+    List<RepResponseDto> Reps
+);
+
+public record RepResponseDto(
+    Guid Id, 
+    Guid SetId, 
+    decimal Weight, 
+    int RepNumber
+);
+
+public record WorkoutSummaryResponse(
+    Guid Id, 
+    string Name, 
+    DateTimeOffset Date
 );
