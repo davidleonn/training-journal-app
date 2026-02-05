@@ -1,12 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/api/axios';
-import { LoginRequest } from '../types';
+import { LoginRequest, LoginResponse } from '../types';
 import { AxiosError } from 'axios';
-
-interface LoginResponse {
-  token: string;
-  expires: string;
-}
 
 export const useLogin = (onLoginSuccess: () => void) => {
   return useMutation({

@@ -15,7 +15,6 @@ export const HeroCard = ({ userName, onStartSession }: HeroCardProps) => (
         Athlete Status: Active
       </span>
 
-      {/* 🛠️ FIX: Adjusted font scaling and added break-words */}
       <h1 className="mt-4 max-w-full text-3xl leading-[1.1] font-black tracking-tight wrap-break-word text-slate-900 sm:text-4xl md:mt-6 md:text-5xl lg:text-6xl">
         Ready to crush it,
         <br />
@@ -33,7 +32,7 @@ export const HeroCard = ({ userName, onStartSession }: HeroCardProps) => (
       </button>
     </div>
 
-    {/* Decorative blur adjusted for mobile */}
+    {/* Decorative blur */}
     <div className="absolute top-0 right-0 -mt-20 -mr-20 h-40 w-40 rounded-full bg-orange-50 opacity-60 blur-[60px] md:h-80 md:w-80 md:blur-[100px]" />
   </section>
 );

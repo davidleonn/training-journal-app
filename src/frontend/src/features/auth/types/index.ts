@@ -19,3 +19,13 @@ export interface ApiError {
     };
   };
 }
+
+export interface LoginResponse {
+  token: string;
+  expires: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+}

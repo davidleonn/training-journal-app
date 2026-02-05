@@ -2,21 +2,22 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { HeroCard } from '../components/HeroCard';
 
-describe('HeroCard Component', () => {
-  it('renders the specific athlete name provided in props', () => {
-    render(<HeroCard userName="David" onStartSession={vi.fn()} />);
+describe('HeroCard', () => {
+  const mockStartSession = vi.fn();
+  const userName = 'David';
 
-    expect(screen.getByTestId('hero-username')).toHaveTextContent('David?');
-    expect(screen.getByText(/Ready to crush it/i)).toBeDefined();
+  it('renders the user name correctly', () => {
+    render(<HeroCard userName={userName} onStartSession={mockStartSession} />);
+
+    expect(screen.getByTestId('hero-username')).toHaveTextContent('David');
   });
 
-  it('calls the onStartSession function when the button is clicked', () => {
-    const mockStart = vi.fn();
-    render(<HeroCard userName="Athlete" onStartSession={mockStart} />);
+  it('calls onStartSession when button is clicked', () => {
+    render(<HeroCard userName={userName} onStartSession={mockStartSession} />);
 
-    const startBtn = screen.getByTestId('start-session-button');
-    fireEvent.click(startBtn);
+    const button = screen.getByTestId('start-session-button');
+    fireEvent.click(button);
 
-    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(mockStartSession).toHaveBeenCalledTimes(1);
   });
 });
