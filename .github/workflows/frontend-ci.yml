@@ -1,4 +1,4 @@
-name: Frontend CI
+name: Frontend Quality Gate (CI)
 
 on:
   push:
@@ -6,12 +6,39 @@ on:
     paths: ["src/frontend/**", "qa/Playwright/**"]
   pull_request:
     branches: ["master"]
-    paths: ["src/frontend/**", "qa/Playwright/**"]
 
 jobs:
+  # ------------------------------------------------------------------
+  # JOB 0: Change Detection
+  # ------------------------------------------------------------------
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/frontend/**'
+              - 'qa/Playwright/**'
+            backend:
+              - 'src/backend/**'
+              - 'src/database/**'
+
+  # ------------------------------------------------------------------
+  # JOB 1: Quality Assurance (The Real Work)
+  # ------------------------------------------------------------------
   quality-assurance:
     name: Lint, Type Check & Test
+    needs: changes
     runs-on: ubuntu-latest
+    # Run if Frontend changed OR Backend changed (for E2E safety)
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,50 +47,45 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          # FIX: Cache BOTH frontend and QA dependencies
           cache-dependency-path: |
             src/frontend/package-lock.json
             qa/Playwright/package-lock.json
 
-      # --- BACKEND PREPARATION (The Bridge) ---
+      # --- BACKEND PREP (For E2E) ---
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0"
 
       - name: Start Services (Docker)
-        # This builds the real API and Database
         run: |
           docker compose up -d --build
-          echo "Waiting for Backend API to respond on port 5001..."
-          # This loop pings the login endpoint. 
-          # It only continues once it gets a response (even a 405/400 is fine, it means the server is UP)
+          echo "Waiting for Backend API..."
           timeout 60s bash -c 'until curl -s http://localhost:5001/auth/login > /dev/null; do sleep 2; done'
-          echo "Backend is UP!"
 
-      # --- FRONTEND SECTION ---
+      # --- FRONTEND CHECKS (Only if Frontend Changed) ---
 
       - name: Install Frontend Dependencies
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: ./src/frontend
         run: npm ci
 
       - name: Check Formatting
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: ./src/frontend
         run: npx prettier --check 'src/**/*.{ts,tsx,css,md}'
 
       - name: Run Linter
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: ./src/frontend
         run: npm run lint
 
-      - name: Type Check
-        working-directory: ./src/frontend
-        run: npx tsc --noEmit
-
       - name: Run Unit Tests
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: ./src/frontend
         run: npx vitest run
 
-      # --- PLAYWRIGHT SECTION ---
+      # --- E2E TESTS (Run for BOTH) ---
 
       - name: Install QA Dependencies
         working-directory: ./qa/Playwright

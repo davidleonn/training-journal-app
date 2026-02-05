@@ -4,22 +4,45 @@ on:
   push:
     branches: ["master"]
     paths:
-      - "src/backend/**" # API & Unit Test changes
-      - "src/database/**" # SQL Scripts
-      - "qa/**" # Postman Tests
+      - "src/backend/**"
+      - "src/database/**"
+      - "qa/**"
       - "docker-compose.yml"
       - ".github/workflows/**"
 
   pull_request:
     branches: ["master"]
-  workflow_dispatch:
 
 jobs:
   # ------------------------------------------------------------------
-  # JOB 1: Unit Tests & Coverage (The "Fast" Guard)
+  # JOB 0: Change Detection (The Traffic Controller)
+  # ------------------------------------------------------------------
+  changes:
+    runs-on: ubuntu-latest
+    # Define outputs so other jobs can read them
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/backend/**'
+              - 'src/database/**'
+              - 'qa/**'
+              - 'docker-compose.yml'
+              - '.github/workflows/**'
+
+  # ------------------------------------------------------------------
+  # JOB 1: Unit Tests (Runs only if backend changed)
   # ------------------------------------------------------------------
   unit-tests:
     name: Unit Tests & Coverage
+    needs: changes
+    # This 'if' is the magic. If false, the job is SKIPPED (Green)
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -41,9 +64,6 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Run Tests & Enforce Coverage
-        # This command does two things:
-        # 1. Runs the tests
-        # 2. Fails the build if Line Coverage is below 80% (/p:Threshold=80)
         run: |
           dotnet test \
           /p:CollectCoverage=true \
@@ -53,12 +73,13 @@ jobs:
           /p:Include="[TrainingJournal.API]TrainingJournal.API.Services.*"
 
   # ------------------------------------------------------------------
-  # JOB 2: Integration Tests (The "Real World" Check)
-  # Only runs if Job 1 passes!
+  # JOB 2: Integration Tests (Runs only if backend changed)
   # ------------------------------------------------------------------
   integration-tests:
     name: API Integration Tests (Docker)
-    needs: unit-tests # <--- Critical: Wait for Unit Tests to pass first
+    needs: [changes, unit-tests] # Waits for both
+    # Run only if backend changed
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
