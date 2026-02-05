@@ -63,10 +63,9 @@ jobs:
           echo "Waiting for Backend API..."
           timeout 60s bash -c 'until curl -s http://localhost:5001/auth/login > /dev/null; do sleep 2; done'
 
-      # --- FRONTEND CHECKS (Only if Frontend Changed) ---
+      # --- FRONTEND SETUP ---
 
       - name: Install Frontend Dependencies
-        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: ./src/frontend
         run: npm ci
 
@@ -85,7 +84,7 @@ jobs:
         working-directory: ./src/frontend
         run: npx vitest run
 
-      # --- E2E TESTS (Run for BOTH) ---
+      # --- E2E TESTS ---
 
       - name: Install QA Dependencies
         working-directory: ./qa/Playwright
