@@ -4,12 +4,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using NSubstitute;
-using TrainingJournal.Api.Models;
 using TrainingJournal.API.Contracts;
 using TrainingJournal.API.Endpoints;
 using TrainingJournal.API.Services.Interfaces;
 using TrainingJournal.API.Validators;
-using Xunit;
 
 namespace TrainingJournal.Tests;
 
@@ -19,6 +17,7 @@ public class WorkoutEndpointTests
     private readonly ClaimsPrincipal _user;
     private readonly Guid _userId = Guid.NewGuid();
     
+    // Validators
     private readonly IValidator<CreateWorkoutRequest> _createValidator;
     private readonly IValidator<UpdateWorkoutRequest> _updateValidator;
 
@@ -26,6 +25,7 @@ public class WorkoutEndpointTests
     {
         _service = Substitute.For<IWorkoutService>();
         
+        // Use real validators to ensure integration is correct
         _createValidator = new CreateWorkoutValidator();
         _updateValidator = new UpdateWorkoutValidator();
         
@@ -35,7 +35,7 @@ public class WorkoutEndpointTests
     }
 
     // -------------------------------------------------------------
-    // HELPER: Create a Valid Request (so Validation doesn't block us)
+    // HELPER: Create Valid Data to pass Validation
     // -------------------------------------------------------------
     private List<WorkoutExerciseInputDto> GetValidExercises()
     {
@@ -44,13 +44,20 @@ public class WorkoutEndpointTests
             new("Squat", 1, new() { new(1, new() { new(100, 5) }) }) 
         };
     }
+    
+    // Helper to get a safe "Past" date so validation never complains about "Future"
+    private DateTimeOffset GetValidDate() => DateTimeOffset.UtcNow.AddMinutes(-1);
+
+    // ==========================================
+    // CREATE TESTS
+    // ==========================================
 
     [Fact]
     public async Task HandleCreate_ShouldReturnConflict_WhenServiceThrowsDuplicateError()
     {
         // Arrange
-        // FIX: Add GetValidExercises() so validation passes
-        var request = new CreateWorkoutRequest("Leg Day", DateTimeOffset.UtcNow, GetValidExercises());
+        // We use a valid request so validation passes, allowing us to hit the Service logic
+        var request = new CreateWorkoutRequest("Leg Day", GetValidDate(), GetValidExercises());
         
         _service.CreateAsync(request, _userId)
             .Returns(Task.FromException<WorkoutResponse>(new InvalidOperationException("Duplicate")));
@@ -59,7 +66,7 @@ public class WorkoutEndpointTests
         var result = await WorkoutEndpoints.HandleCreate(request, _service, _createValidator, _user);
 
         // Assert
-        var conflict = result.Should().BeOfType<Conflict<object>>().Subject;
+      var conflict = result.Should().BeAssignableTo<IStatusCodeHttpResult>().Subject;
         conflict.StatusCode.Should().Be(409);
     }
 
@@ -67,9 +74,8 @@ public class WorkoutEndpointTests
     public async Task HandleCreate_ShouldReturnCreated_WhenServiceSucceeds()
     {
         // Arrange
-        // FIX: Add GetValidExercises()
-        var request = new CreateWorkoutRequest("Leg Day", DateTimeOffset.UtcNow, GetValidExercises());
-        var expectedResponse = new WorkoutResponse(Guid.NewGuid(), _userId, "Leg Day", DateTimeOffset.UtcNow, []);
+        var request = new CreateWorkoutRequest("Leg Day", GetValidDate(), GetValidExercises());
+        var expectedResponse = new WorkoutResponse(Guid.NewGuid(), _userId, "Leg Day", request.Date, []);
 
         _service.CreateAsync(request, _userId).Returns(expectedResponse);
 
@@ -85,18 +91,22 @@ public class WorkoutEndpointTests
     public async Task HandleCreate_ShouldReturnBadRequest_WhenDateIsInFuture()
     {
         // Arrange
-        // This fails validation intentionally, so empty exercises are fine here (validation fails anyway)
-        var request = new CreateWorkoutRequest("Future Workout", DateTimeOffset.UtcNow.AddDays(1), new());
+        // Intentionally Invalid Date to trigger Validation Failure
+        var request = new CreateWorkoutRequest("Future Workout", DateTimeOffset.UtcNow.AddDays(1), GetValidExercises());
 
         // Act
         var result = await WorkoutEndpoints.HandleCreate(request, _service, _createValidator, _user);
 
         // Assert
-        // It returns a Problem result (ValidationProblem)
+        // Should be Bad Request (400) due to validation
         result.GetType().Name.Should().Contain("Problem"); 
         
         await _service.DidNotReceive().CreateAsync(Arg.Any<CreateWorkoutRequest>(), Arg.Any<Guid>());
     }
+
+    // ==========================================
+    // GET TESTS
+    // ==========================================
 
     [Fact]
     public async Task HandleGetById_ShouldReturnNotFound_WhenServiceReturnsNull()
@@ -112,13 +122,16 @@ public class WorkoutEndpointTests
         await action.Should().ThrowAsync<KeyNotFoundException>();
     }
 
+    // ==========================================
+    // UPDATE TESTS
+    // ==========================================
+
     [Fact]
     public async Task HandleUpdate_ShouldReturnNoContent_WhenServiceSucceeds()
     {
         // Arrange
         var id = Guid.NewGuid();
-        // FIX: Add GetValidExercises()
-        var request = new UpdateWorkoutRequest("New Name", DateTimeOffset.UtcNow, GetValidExercises());
+        var request = new UpdateWorkoutRequest("New Name", GetValidDate(), GetValidExercises());
 
         _service.UpdateAsync(id, request, _userId).Returns(true);
 
@@ -135,9 +148,7 @@ public class WorkoutEndpointTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        // FIX: Add GetValidExercises()
-        // If we don't add exercises, Validation fails first, returning 400 instead of reaching the Exception logic.
-        var request = new UpdateWorkoutRequest("New Name", DateTimeOffset.UtcNow, GetValidExercises());
+        var request = new UpdateWorkoutRequest("New Name", GetValidDate(), GetValidExercises());
 
         _service.UpdateAsync(id, request, _userId).Returns(false);
 
@@ -153,7 +164,8 @@ public class WorkoutEndpointTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var request = new UpdateWorkoutRequest("", DateTimeOffset.UtcNow, GetValidExercises());
+        // Intentionally Invalid Name
+        var request = new UpdateWorkoutRequest("", GetValidDate(), GetValidExercises());
 
         // Act
         var result = await WorkoutEndpoints.HandleUpdate(id, request, _service, _updateValidator, _user);
