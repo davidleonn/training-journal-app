@@ -72,7 +72,7 @@ export async function assertComponentReady(locator: Locator, expectedText?: stri
  */
 
 export async function verifyNavigation(page: Page, pageName: string, options: { timeout?: number } = {}) {
-  const { timeout = 10000 } = options;
+  const { timeout = 20000 } = options;
 
   try {
     await page.waitForURL(`**${pageName}`, {

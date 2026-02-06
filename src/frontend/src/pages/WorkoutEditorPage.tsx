@@ -1,12 +1,17 @@
+import { useState } from 'react'; // Added for modal state
 import { useNavigate } from 'react-router-dom';
 import { FormProvider, useFieldArray } from 'react-hook-form';
-import { ArrowLeft, Save, PlusCircle, Layout, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Layout, CalendarDays, AlertCircle } from 'lucide-react';
 import { Button, Input } from '@/components';
 import { ExerciseCard, useWorkoutForm } from '@/features';
 
 export const WorkoutEditorPage = () => {
   const navigate = useNavigate();
-  const { form, submit } = useWorkoutForm(); //
+  const { form, submit } = useWorkoutForm();
+
+  // Modal State
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'exercises',
@@ -17,6 +22,23 @@ export const WorkoutEditorPage = () => {
     day: 'numeric',
     year: 'numeric',
   });
+
+  // Intercept submit to show modal
+  const handleSaveClick = async (e?: React.BaseSyntheticEvent) => {
+    if (e) e.preventDefault();
+
+    // Trigger validation before showing modal
+    const isValid = await form.trigger();
+    if (isValid) {
+      setIsSaveModalOpen(true);
+    }
+  };
+
+  // Final confirmation action
+  const confirmSave = () => {
+    setIsSaveModalOpen(false);
+    submit(); // Executes the actual form submission
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24" data-testid="workout-editor-page">
@@ -44,7 +66,8 @@ export const WorkoutEditorPage = () => {
         </div>
 
         <FormProvider {...form}>
-          <form onSubmit={submit} className="space-y-10" data-testid="workout-form">
+          {/* Change onSubmit to our interceptor */}
+          <form onSubmit={handleSaveClick} className="space-y-10" data-testid="workout-form">
             {/* Section 1: Workout Metadata */}
             <section className="space-y-4">
               <h2 className="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-400 uppercase">
@@ -64,7 +87,6 @@ export const WorkoutEditorPage = () => {
                   />
                 </div>
 
-                {/* Date is now a display-only "Creation Date" badge */}
                 <div
                   className="flex h-14 min-w-fit items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 px-6 text-slate-500"
                   data-testid="workout-creation-date-display"
@@ -111,6 +133,39 @@ export const WorkoutEditorPage = () => {
           </form>
         </FormProvider>
       </main>
+
+      {/* Confirmation Modal */}
+      {isSaveModalOpen && (
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm duration-200">
+          <div
+            className="animate-in zoom-in-95 w-full max-w-md scale-100 rounded-2xl bg-white p-6 shadow-2xl duration-200"
+            data-testid="save-confirm-modal"
+          >
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+              <AlertCircle size={24} />
+            </div>
+
+            <h3 className="mb-2 text-xl font-black text-slate-900">Finish Workout?</h3>
+            <p className="mb-6 text-slate-500">Are you ready to save this workout?</p>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsSaveModalOpen(false)}
+                className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
+                testId="keep-editing-btn"
+              >
+                Keep Editing
+              </Button>
+
+              <Button type="button" onClick={confirmSave} className="flex-1 bg-[#FF6B00] hover:bg-[#e66000]" testId="confirm-save-btn">
+                Yes, Save Workout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

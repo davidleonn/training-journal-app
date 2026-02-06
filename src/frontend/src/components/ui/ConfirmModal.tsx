@@ -24,7 +24,7 @@ export const ConfirmModal = ({
 }: ConfirmModalProps) => {
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose} data-testid="confirm-modal">
+      <Dialog as="div" className="relative z-50" onClose={onClose} data-testid="confirm-modal-component">
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
@@ -75,7 +75,7 @@ export const ConfirmModal = ({
                     }}
                     /* 🎨 Matches your primary orange button style */
                     className="h-12 bg-orange-600 shadow-orange-200 hover:bg-orange-700 sm:w-36"
-                    testId="confirm-modal-confirm"
+                    testId="confirm-modal"
                   >
                     {confirmText}
                   </Button>

@@ -7,12 +7,14 @@ export class NewWorkout {
   readonly dateComponent: Locator;
   readonly addExerciseBtn: Locator;
   readonly saveWorkoutBtn: Locator;
+  readonly confirmSaveBtn: Locator;
 
   constructor(public readonly page: Page) {
     this.workoutNameInput = page.getByTestId("workout-name-input");
     this.dateComponent = page.getByTestId("workout-creation-date-display");
     this.addExerciseBtn = page.getByTestId("add-exercise-builder-btn");
     this.saveWorkoutBtn = page.getByTestId("save-workout-submit-btn");
+    this.confirmSaveBtn = page.getByTestId("confirm-save-btn");
   }
 
   private exerciseNameInput(index: number): Locator {
@@ -76,5 +78,6 @@ export class NewWorkout {
 
   public async saveWorkout() {
     await waitAndClick(this.saveWorkoutBtn);
+    await waitAndClick(this.confirmSaveBtn);
   }
 }

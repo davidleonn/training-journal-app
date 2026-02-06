@@ -24,13 +24,8 @@ export const WorkoutList = ({ workouts, loading, onEdit, onDelete }: WorkoutList
 
   return (
     <div className="space-y-4" data-testid="workout-list">
-      {workouts.map((workout) => (
-        <WorkoutCard
-          key={workout.id}
-          workout={workout}
-          onEdit={onEdit}
-          onDelete={onDelete} // Pass delete action
-        />
+      {workouts.map((workout, index) => (
+        <WorkoutCard key={workout.id} workout={workout} onEdit={onEdit} onDelete={onDelete} testId={`workout-card-${index}`} />
       ))}
     </div>
   );

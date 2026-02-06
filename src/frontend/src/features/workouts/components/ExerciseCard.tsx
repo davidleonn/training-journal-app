@@ -47,7 +47,7 @@ export const ExerciseCard = ({ exerciseIndex, onRemove }: ExerciseCardProps) => 
           size="sm"
           className="mt-2 w-full border-2 border-dashed border-gray-300 text-gray-500 hover:border-orange-500 hover:text-orange-600"
           onClick={() => append({ weight: 0, reps: 0 })}
-          testId={`add-set-btn`}
+          testId={`add-set-btn-${exerciseIndex}`}
         >
           + Add Set
         </Button>
