@@ -10,9 +10,10 @@ describe('WorkoutList', () => {
   ];
 
   const mockOnEdit = vi.fn();
+  const mockOnDelete = vi.fn();
 
   it('renders loading skeleton when loading is true', () => {
-    render(<WorkoutList workouts={[]} loading={true} onEdit={mockOnEdit} />);
+    render(<WorkoutList workouts={[]} loading={true} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     expect(screen.getByTestId('workout-list-loading')).toBeInTheDocument();
     // Should NOT show empty state or list
@@ -21,14 +22,14 @@ describe('WorkoutList', () => {
   });
 
   it('renders empty state when not loading and list is empty', () => {
-    render(<WorkoutList workouts={[]} loading={false} onEdit={mockOnEdit} />);
+    render(<WorkoutList workouts={[]} loading={false} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     expect(screen.getByTestId('workout-list-empty')).toBeInTheDocument();
     expect(screen.getByText(/No workouts yet/i)).toBeInTheDocument();
   });
 
   it('renders list of workouts when data is present', () => {
-    render(<WorkoutList workouts={mockWorkouts} loading={false} onEdit={mockOnEdit} />);
+    render(<WorkoutList workouts={mockWorkouts} loading={false} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     const list = screen.getByTestId('workout-list');
     expect(list).toBeInTheDocument();
@@ -42,13 +43,15 @@ describe('WorkoutList', () => {
     expect(cards[1]).toHaveTextContent('Pull Day');
   });
 
-  it('propagates onEdit event from children', () => {
-    render(<WorkoutList workouts={mockWorkouts} loading={false} onEdit={mockOnEdit} />);
+  it('propagates onDelete event from children', () => {
+    render(<WorkoutList workouts={mockWorkouts} loading={false} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
-    // Click the "View Details" button on the first card
-    const buttons = screen.getAllByTestId('view-workout-btn');
-    fireEvent.click(buttons[0]);
+    const deleteButtons = screen.getAllByTestId('delete-workout-btn');
+    fireEvent.click(deleteButtons[0]); // Click trash icon on first item
 
-    expect(mockOnEdit).toHaveBeenCalledWith('1');
+    // Click confirm in the modal that appears
+    fireEvent.click(screen.getByTestId('confirm-modal-confirm'));
+
+    expect(mockOnDelete).toHaveBeenCalledWith('1');
   });
 });

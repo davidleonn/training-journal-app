@@ -13,7 +13,7 @@ export const QuickActions = () => {
         <button
           onClick={() => navigate('/workouts/new')}
           className="group flex w-full items-center justify-between rounded-xl bg-orange-50 p-4 transition-all hover:bg-orange-100 hover:shadow-md active:scale-95"
-          data-testid="action-log-workout"
+          data-testid="action-create-workout"
         >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-orange-600 shadow-sm">

@@ -55,11 +55,20 @@ export const WorkoutEditorPage = () => {
                 data-testid="workout-metadata-section"
               >
                 <div className="w-full flex-1">
-                  <Input label="Workout Name" placeholder="e.g., Upper Body Power" testId="workout-name-input" {...form.register('name')} />
+                  <Input
+                    label="Workout Name"
+                    placeholder="e.g., Upper Body Power"
+                    testId="workout-name-input"
+                    autoComplete="off"
+                    {...form.register('name')}
+                  />
                 </div>
 
-                {/* 📅 Changed: Date is now a display-only "Creation Date" badge */}
-                <div className="flex h-14 min-w-fit items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 px-6 text-slate-500">
+                {/* Date is now a display-only "Creation Date" badge */}
+                <div
+                  className="flex h-14 min-w-fit items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 px-6 text-slate-500"
+                  data-testid="workout-creation-date-display"
+                >
                   <CalendarDays size={18} className="text-slate-400" />
                   <div className="text-left">
                     <p className="text-[10px] font-black tracking-tight text-slate-400 uppercase">Created On</p>

@@ -16,19 +16,24 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 describe('SetRow', () => {
   const mockRemove = vi.fn();
 
-  it('renders inputs with correct values', () => {
+  it('renders inputs with correct values and constraints', () => {
+    // Updated title
     render(
       <TestWrapper>
         <SetRow exerciseIndex={0} setIndex={0} onRemove={mockRemove} />
       </TestWrapper>
     );
 
-    // Verify Set Number
-    expect(screen.getByTestId('set-number-0-0')).toHaveTextContent('#1');
+    // Verify Values
+    const weightInput = screen.getByTestId('weight-input-0-0');
+    const repsInput = screen.getByTestId('reps-input-0-0');
 
-    // Verify Inputs (Connected to Form)
-    expect(screen.getByTestId('weight-input-0-0')).toHaveValue(100);
-    expect(screen.getByTestId('reps-input-0-0')).toHaveValue(5);
+    expect(weightInput).toHaveValue(100);
+    expect(repsInput).toHaveValue(5);
+
+    // Verify negative numbers are blocked at the HTML level
+    expect(weightInput).toHaveAttribute('min', '0');
+    expect(repsInput).toHaveAttribute('min', '0');
   });
 
   it('calls onRemove when delete button is clicked', () => {

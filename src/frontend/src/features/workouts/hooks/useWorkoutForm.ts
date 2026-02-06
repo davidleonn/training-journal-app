@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { workoutsApi } from '../api';
+import { useToast } from '@/context/ToastContext';
 
 // 1. Define Validation Schema (Matches your Backend DTOs)
 const workoutSchema = z.object({
@@ -15,7 +16,9 @@ const workoutSchema = z.object({
         sets: z
           .array(
             z.object({
-              weight: z.number().min(0),
+              // Weight: 0 is allowed (e.g. bodyweight), but no negatives
+              weight: z.number().min(0, 'Weight cannot be negative'),
+              // Reps: Must be at least 1
               reps: z.number().min(1, 'Must have at least 1 rep'),
             })
           )
@@ -30,8 +33,8 @@ export type WorkoutFormData = z.infer<typeof workoutSchema>;
 
 export const useWorkoutForm = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
-  // 2. Initialize Form
   const form = useForm<WorkoutFormData>({
     resolver: zodResolver(workoutSchema),
     defaultValues: {
@@ -59,10 +62,11 @@ export const useWorkoutForm = () => {
           })),
         })),
       });
-      navigate('/workouts'); // Redirect back to history
+      addToast('Workout saved successfully!', 'success');
+      navigate('/workouts');
     } catch (error) {
       console.error('Failed to create workout', error);
-      // In a real app, you'd show a toast notification here
+      addToast('Failed to save workout. Please try again.', 'error');
     }
   };
 
