@@ -17,7 +17,7 @@ describe('QuickActions', () => {
   it('navigates to empty editor when "Log Empty Workout" is clicked', () => {
     render(<QuickActions />);
 
-    const logBtn = screen.getByTestId('action-log-workout');
+    const logBtn = screen.getByTestId('action-create-workout');
     fireEvent.click(logBtn);
 
     expect(mockNavigate).toHaveBeenCalledWith('/workouts/new');

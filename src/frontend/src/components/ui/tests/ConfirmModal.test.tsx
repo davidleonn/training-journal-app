@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConfirmModal } from '../ConfirmModal';
 
 describe('ConfirmModal Component', () => {
@@ -13,12 +13,16 @@ describe('ConfirmModal Component', () => {
     cancelText: 'No, Keep',
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders correctly when open', () => {
     render(<ConfirmModal {...defaultProps} />);
 
     expect(screen.getByText('Delete Item?')).toBeInTheDocument();
     expect(screen.getByText('Are you sure you want to proceed?')).toBeInTheDocument();
-    expect(screen.getByTestId('confirm-modal-confirm')).toHaveTextContent('Yes, Delete');
+    expect(screen.getByTestId('confirm-modal')).toHaveTextContent('Yes, Delete');
     expect(screen.getByTestId('confirm-modal-cancel')).toHaveTextContent('No, Keep');
   });
 
@@ -31,7 +35,7 @@ describe('ConfirmModal Component', () => {
   it('calls onConfirm and onClose when confirm button is clicked', () => {
     render(<ConfirmModal {...defaultProps} />);
 
-    const confirmBtn = screen.getByTestId('confirm-modal-confirm');
+    const confirmBtn = screen.getByTestId('confirm-modal');
     fireEvent.click(confirmBtn);
 
     expect(defaultProps.onConfirm).toHaveBeenCalledTimes(1);

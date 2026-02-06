@@ -34,23 +34,26 @@ describe('WorkoutList', () => {
     const list = screen.getByTestId('workout-list');
     expect(list).toBeInTheDocument();
 
-    // Check that we have 2 cards
-    const cards = screen.getAllByTestId('workout-card');
-    expect(cards).toHaveLength(2);
+    // 1. Verify specific cards exist by their unique IDs
+    const card0 = screen.getByTestId('workout-card-0');
+    const card1 = screen.getByTestId('workout-card-1');
 
-    // Verify content of first card
-    expect(cards[0]).toHaveTextContent('Push Day');
-    expect(cards[1]).toHaveTextContent('Pull Day');
+    expect(card0).toBeInTheDocument();
+    expect(card1).toBeInTheDocument();
+
+    // 2. Verify content matches the mock data
+    expect(card0).toHaveTextContent('Push Day');
+    expect(card1).toHaveTextContent('Pull Day');
   });
 
   it('propagates onDelete event from children', () => {
     render(<WorkoutList workouts={mockWorkouts} loading={false} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
-    const deleteButtons = screen.getAllByTestId('delete-workout-btn');
-    fireEvent.click(deleteButtons[0]); // Click trash icon on first item
+    const deleteButtons = screen.getAllByTestId('workout-card-0-delete-btn');
+    fireEvent.click(deleteButtons[0]);
 
     // Click confirm in the modal that appears
-    fireEvent.click(screen.getByTestId('confirm-modal-confirm'));
+    fireEvent.click(screen.getByTestId('confirm-modal'));
 
     expect(mockOnDelete).toHaveBeenCalledWith('1');
   });

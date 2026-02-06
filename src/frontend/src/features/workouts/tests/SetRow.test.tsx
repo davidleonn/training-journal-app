@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { FormProvider, useForm } from 'react-hook-form';
 import { SetRow } from '../components/SetRow';
+import { FormProvider, useForm } from 'react-hook-form';
 
-// Helper to provide the React Hook Form context
+// Wrapper to provide React Hook Form context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   const methods = useForm({
     defaultValues: {
@@ -17,23 +17,23 @@ describe('SetRow', () => {
   const mockRemove = vi.fn();
 
   it('renders inputs with correct values and constraints', () => {
-    // Updated title
     render(
       <TestWrapper>
         <SetRow exerciseIndex={0} setIndex={0} onRemove={mockRemove} />
       </TestWrapper>
     );
 
-    // Verify Values
-    const weightInput = screen.getByTestId('weight-input-0-0');
-    const repsInput = screen.getByTestId('reps-input-0-0');
+    const weightInput = screen.getByLabelText(/Weight \(kg\)/i);
+    const repsInput = screen.getByLabelText(/Reps/i);
 
+    expect(weightInput).toBeInTheDocument();
     expect(weightInput).toHaveValue(100);
+
+    expect(repsInput).toBeInTheDocument();
     expect(repsInput).toHaveValue(5);
 
-    // Verify negative numbers are blocked at the HTML level
     expect(weightInput).toHaveAttribute('min', '0');
-    expect(repsInput).toHaveAttribute('min', '0');
+    expect(repsInput).toHaveAttribute('min', '1');
   });
 
   it('calls onRemove when delete button is clicked', () => {

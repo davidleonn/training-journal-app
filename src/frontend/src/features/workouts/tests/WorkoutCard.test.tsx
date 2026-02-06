@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WorkoutCard } from '../components/WorkoutCard';
 import { WorkoutSummaryResponse } from '../types';
 
@@ -12,7 +12,9 @@ describe('WorkoutCard', () => {
 
   const mockOnEdit = vi.fn();
   const mockOnDelete = vi.fn(); // 1. Mock the delete function
-
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   it('renders workout name and formatted date', () => {
     render(<WorkoutCard workout={mockWorkout} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
     expect(screen.getByTestId('workout-name')).toHaveTextContent('Leg Day');
@@ -38,7 +40,8 @@ describe('WorkoutCard', () => {
     expect(await screen.findByText('Delete Workout?')).toBeInTheDocument();
 
     // Click "Delete" inside the modal
-    const confirmBtn = screen.getByTestId('confirm-modal-confirm');
+    const confirmBtn = screen.getByTestId('confirm-modal');
+
     fireEvent.click(confirmBtn);
 
     // Verify the function was actually called
