@@ -1,7 +1,7 @@
 import { TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-// Mock data - eventually this will come from your backend
+// Mock data
 const data = [
   { day: 'Mon', volume: 2100 },
   { day: 'Tue', volume: 3500 },
@@ -27,9 +27,8 @@ export const ProgressChart = () => {
           <p className="text-[10px] font-black tracking-widest text-green-500 uppercase">▲ 12% vs last week</p>
         </div>
       </div>
-
-      <div className="h-64 w-full" data-testid="chart-render-area">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="min-h-64 w-full" data-testid="chart-render-area">
+        <ResponsiveContainer width="100%" height={256}>
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
@@ -41,7 +40,15 @@ export const ProgressChart = () => {
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} dy={10} />
             <YAxis hide />
             <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-            <Area type="monotone" dataKey="volume" stroke="#FF6B00" strokeWidth={4} fillOpacity={1} fill="url(#colorVolume)" />
+            <Area
+              type="monotone"
+              dataKey="volume"
+              stroke="#FF6B00"
+              strokeWidth={4}
+              fillOpacity={1}
+              fill="url(#colorVolume)"
+              animationDuration={1000}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

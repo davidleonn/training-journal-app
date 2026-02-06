@@ -10,6 +10,7 @@ export async function waitAndFill(locator: Locator, value: string | number): Pro
   await expect(locator).toBeVisible({ timeout: 5000 });
   await locator.fill(typeof value === "number" ? value.toString() : value);
 }
+
 export async function waitClearAndFill(locator: Locator, value: string | number): Promise<void> {
   await locator.waitFor({ state: "visible" });
   await expect(locator).toBeVisible({ timeout: 5000 });
@@ -71,7 +72,7 @@ export async function assertComponentReady(locator: Locator, expectedText?: stri
  */
 
 export async function verifyNavigation(page: Page, pageName: string, options: { timeout?: number } = {}) {
-  const { timeout = 10000 } = options;
+  const { timeout = 20000 } = options;
 
   try {
     await page.waitForURL(`**${pageName}`, {

@@ -8,6 +8,8 @@ export class Dashboard {
   readonly heroCardComponent: Locator;
   readonly progressChartComponent: Locator;
   readonly historySideBarComponent: Locator;
+  readonly quickActionsComponent: Locator;
+  readonly createWorkout: Locator;
 
   constructor(public readonly page: Page) {
     this.headerLogo = page.getByTestId("header-logo");
@@ -16,6 +18,8 @@ export class Dashboard {
     this.heroCardComponent = page.getByTestId("dashboard-hero");
     this.progressChartComponent = page.getByTestId("progress-chart-container");
     this.historySideBarComponent = page.getByTestId("history-sidebar");
+    this.quickActionsComponent = page.getByTestId("dashboard-quick-actions");
+    this.createWorkout = page.getByTestId("action-create-workout");
   }
 
   public async validateDashboardComponents() {
@@ -24,6 +28,11 @@ export class Dashboard {
     await assertComponentReady(this.heroCardComponent, "Active");
     await assertComponentReady(this.progressChartComponent, "Weekly");
     await assertComponentReady(this.historySideBarComponent, "History");
+    await assertComponentReady(this.quickActionsComponent, "Quick Actions");
+  }
+
+  public async selectCreateWorkout() {
+    await waitAndClick(this.createWorkout);
   }
 
   public async doLogout() {

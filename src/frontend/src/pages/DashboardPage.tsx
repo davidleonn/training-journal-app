@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { useProfile, HeroCard, ProgressChart, HistorySidebar } from '@/features';
+import { QuickActions } from '@/features';
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
   const { data: profile, isLoading, isError } = useProfile();
 
-  // Helper to extract username from email (e.g., david@test.com -> david)
   const userName = profile?.email.split('@')[0] || 'Athlete';
 
   if (isLoading) {
@@ -15,23 +17,23 @@ export const DashboardPage = () => {
   }
 
   if (isError) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center font-bold text-slate-500">Error loading profile. Please refresh or log in again.</div>
-    );
+    return <div className="flex h-[80vh] items-center justify-center font-bold text-slate-500">Error loading profile.</div>;
   }
 
   return (
     <main className="mx-auto max-w-7xl p-4 sm:p-6 md:p-10">
       <div className="grid grid-cols-1 gap-6 md:gap-10 lg:grid-cols-3">
-        {/* Left Columns - Switched from space-y-10 to space-y-6 on mobile */}
+        {/* Left Column (Main Content) */}
         <div className="space-y-6 md:space-y-10 lg:col-span-2">
-          <HeroCard userName={userName} onStartSession={() => console.log('Open Modal')} />
-          <ProgressChart />
+          <HeroCard userName={userName} onStartSession={() => navigate('/workouts/start')} />
+          <HistorySidebar />
         </div>
 
-        {/* Right Sidebar */}
-        <div className="lg:col-span-1">
-          <HistorySidebar />
+        {/* Right Column (Sidebar + Actions) */}
+        <div className="space-y-6 lg:col-span-1">
+          {' '}
+          <QuickActions />
+          <ProgressChart />
         </div>
       </div>
     </main>

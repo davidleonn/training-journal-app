@@ -1,20 +1,26 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { LoginPage } from '@/pages';
-import { ProtectedRoute } from '@/routes/ProtectedRoute';
-import { DashboardPage } from '@/pages';
+import { LoginPage, DashboardPage, WorkoutHistoryPage, WorkoutEditorPage, WorkoutStartPage, RoutinesPage } from './pages';
+import { ProtectedRoute } from './routes/ProtectedRoute';
+import { ToastProvider } from './context/ToastContext';
 
-export default function App() {
+function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
+    <ToastProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<ProtectedRoute />}>
-        {/* Swapping the placeholder for our actual DashboardPage */}
-        <Route path="/dashboard" element={<DashboardPage />} />
-      </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/workouts" element={<WorkoutHistoryPage />} />
+          <Route path="/workouts/new" element={<WorkoutEditorPage />} />
+          <Route path="/workouts/start" element={<WorkoutStartPage />} />
+          <Route path="/routines" element={<RoutinesPage />} />
+        </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </ToastProvider>
   );
 }
+
+export default App;

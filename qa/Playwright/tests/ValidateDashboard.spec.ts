@@ -4,7 +4,7 @@ import { verifyNavigation } from "../support";
 
 let app: App;
 
-test.describe.parallel("Login Happy Path", () => {
+test.describe.parallel("Validate Dashboard and Login Happy Path", () => {
   test.beforeEach(async ({ page }) => {
     app = new App(page);
     await page.goto("/login");
