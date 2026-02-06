@@ -10,6 +10,7 @@ export async function waitAndFill(locator: Locator, value: string | number): Pro
   await expect(locator).toBeVisible({ timeout: 5000 });
   await locator.fill(typeof value === "number" ? value.toString() : value);
 }
+
 export async function waitClearAndFill(locator: Locator, value: string | number): Promise<void> {
   await locator.waitFor({ state: "visible" });
   await expect(locator).toBeVisible({ timeout: 5000 });

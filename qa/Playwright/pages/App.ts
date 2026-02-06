@@ -1,10 +1,12 @@
 import { Page } from "@playwright/test";
 import { Login } from "./Login";
 import { Dashboard } from "./Dashboard";
+import { NewWorkout } from "./NewWorkout";
 
 export class App {
   private _Login?: Login;
   private _Dashboard?: Dashboard;
+  private _NewWorkout?: NewWorkout;
 
   constructor(public page: Page) {}
 
@@ -20,5 +22,12 @@ export class App {
       this._Dashboard = new Dashboard(this.page);
     }
     return this._Dashboard;
+  }
+
+  public get newWorkout() {
+    if (!this._NewWorkout) {
+      this._NewWorkout = new NewWorkout(this.page);
+    }
+    return this._NewWorkout;
   }
 }
