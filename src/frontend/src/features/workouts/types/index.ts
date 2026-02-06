@@ -20,9 +20,7 @@ export interface CreateWorkoutRequest {
   exercises: WorkoutExerciseInput[];
 }
 
-export interface UpdateWorkoutRequest extends CreateWorkoutRequest {
-  // Update has the exact same shape as Create in your backend
-}
+export type UpdateWorkoutRequest = CreateWorkoutRequest;
 
 // OUTPUTS
 

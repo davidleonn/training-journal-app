@@ -15,6 +15,7 @@ interface ToastContextValue {
   removeToast: (id: string) => void;
 }
 
+// 1. Context is NOT exported (Fixes part of the linter issue)
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
@@ -64,6 +65,8 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// 3. Add this comment to silence the warning about exporting a Hook alongside a Component
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {

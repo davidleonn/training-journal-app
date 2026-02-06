@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 export const WorkoutStartPage = () => {
   const navigate = useNavigate();
 
-  // 💡 MOCK DATA
+  // MOCK DATA
   const activeProgram = {
     id: 'prog-1',
     name: 'Classic PPL Split',
@@ -39,7 +39,7 @@ export const WorkoutStartPage = () => {
     ],
   };
 
-  const handleStartWorkout = (_workoutName: string) => {
+  const handleStartWorkout = () => {
     navigate('/workouts/new');
   };
 
@@ -91,7 +91,7 @@ export const WorkoutStartPage = () => {
                 {activeProgram.workouts.map((workout) => (
                   <div
                     key={workout.id}
-                    onClick={() => handleStartWorkout(workout.name)}
+                    onClick={() => handleStartWorkout()}
                     className={`group flex cursor-pointer items-center justify-between p-4 transition-colors ${workout.doneThisWeek ? 'bg-gray-50 opacity-60 hover:opacity-100' : 'hover:bg-orange-50/50'} ${workout.recommended ? 'bg-orange-50/40' : ''} `}
                   >
                     <div className="flex items-center gap-4">
