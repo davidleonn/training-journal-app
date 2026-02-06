@@ -26,14 +26,14 @@ export const DashboardPage = () => {
         {/* Left Column (Main Content) */}
         <div className="space-y-6 md:space-y-10 lg:col-span-2">
           <HeroCard userName={userName} onStartSession={() => navigate('/workouts/start')} />
-          <ProgressChart />
+          <HistorySidebar />
         </div>
 
         {/* Right Column (Sidebar + Actions) */}
         <div className="space-y-6 lg:col-span-1">
           {' '}
-          <HistorySidebar />
           <QuickActions />
+          <ProgressChart />
         </div>
       </div>
     </main>

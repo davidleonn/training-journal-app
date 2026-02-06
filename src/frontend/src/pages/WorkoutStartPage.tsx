@@ -39,7 +39,7 @@ export const WorkoutStartPage = () => {
     ],
   };
 
-  const handleStartWorkout = (workoutName: string) => {
+  const handleStartWorkout = (_workoutName: string) => {
     navigate('/workouts/new');
   };
 

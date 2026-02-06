@@ -21,9 +21,19 @@ export const useWorkouts = () => {
     }
   }, []);
 
+  const deleteWorkout = async (id: string) => {
+    try {
+      await workoutsApi.delete(id);
+      await fetchWorkouts();
+    } catch (err) {
+      console.error('Failed to delete:', err);
+      setError('Could not remove workout');
+    }
+  };
+
   useEffect(() => {
     fetchWorkouts();
   }, [fetchWorkouts]);
 
-  return { workouts, loading, error, refresh: fetchWorkouts };
+  return { workouts, loading, error, refresh: fetchWorkouts, deleteWorkout };
 };

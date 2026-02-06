@@ -1,7 +1,8 @@
 import { WorkoutListProps } from '../types';
 import { WorkoutCard } from './WorkoutCard';
 
-export const WorkoutList = ({ workouts, loading, onEdit }: WorkoutListProps) => {
+// Add onDelete to Props and pass it to WorkoutCard
+export const WorkoutList = ({ workouts, loading, onEdit, onDelete }: WorkoutListProps & { onDelete: (id: string) => void }) => {
   if (loading) {
     return (
       <div className="space-y-4" data-testid="workout-list-loading">
@@ -24,7 +25,12 @@ export const WorkoutList = ({ workouts, loading, onEdit }: WorkoutListProps) => 
   return (
     <div className="space-y-4" data-testid="workout-list">
       {workouts.map((workout) => (
-        <WorkoutCard key={workout.id} workout={workout} onEdit={onEdit} />
+        <WorkoutCard
+          key={workout.id}
+          workout={workout}
+          onEdit={onEdit}
+          onDelete={onDelete} // Pass delete action
+        />
       ))}
     </div>
   );
